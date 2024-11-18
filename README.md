@@ -19,14 +19,14 @@ classDiagram
         Integer id_vente
         Float prix_depart
         DateTime date_fin
-        Boolean est_montante
-        Boolean multiple_offres_autorisees
-        Boolean duree_limite
-        Boolean est_revocable
     }
 
     class SalleVente {
         Integer id_salle
+        Boolean est_montante
+        Boolean multiple_offres_autorisees
+        Boolean duree_limite
+        Boolean est_revocable
     }
 
     class Produit {
