@@ -1,5 +1,6 @@
 # Plateforme d'enchère
 
+## Dépendences & contraintes
 
 <table>
   <tr>
@@ -10,13 +11,14 @@
   </tr>
   <tr>
     <td style=" text-align: left; border:1px solid">
-     Email → {nom, prénom, adresse_postale} <br><br>
-     id_produit → {nom_produit, prix_revient, stock,id_categorie} <br><br>
-     id_categorie → {nom_categorie, description_categorie} <br><br>
-     {id_produit, nom_caracteristique} → valeur_caracteristique <br><br>
-     id_salle → {id_categorie} <br><br>
-     id_vente → {id_produit, id_salle, prix_depart, date_fin, type_vente, est_montante, multiple_offres_autorisees, duree_limitee, est_revocable} <br><br>
-     {email, id_vente, date_heure_offre} → {prix_offre, quantite_souhaitee}
+     EmailUtilisateur → {Nom, Prenom, AdressePostale} <br><br>
+     IdProduit → {NomProduit, PrixRevient, Stock , NomCategorie} <br><br>
+     NomCategorie → DescriptionCategorie <br><br>
+     {IdProduit, NomCaracteristique} → ValeurCaracteristique <br><br>
+     IdSalle → {IdCategorie} <br><br>
+     IdVente → {IdProduit, IdSalle, PrixDepart, Sens, NbOffres, Revocabilite} <br>
+     IdVente → {DateDebut, DateFin}<br><br>
+     {EmailUtilisateur, IdVente, DateHeureOffre} → {PrixAchat, QuantiteOffre}
     </td>
     <td style=" text-align: left;   border:1px solid">
      prix_revient > 0 <br><br>
@@ -40,3 +42,7 @@
     </td>
   </tr>
 </table>
+
+## Schéma entité-association 
+
+![Schéma entité relation](entite_association.png)
