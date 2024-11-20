@@ -33,8 +33,6 @@
      Une catégorie peut avoir plusieurs produits ↠
     </td>
     <td style=" text-align: left; border:1px solid">
-     Une vente ne concerne qu'un seul produit <br><br>
-     Une vente n'a lieu que dans une seule salle <br><br>
      Une vente à durée libre implique un délai maximal de 10 minutes entre deux offres <br><br>
      Ventes par défaut : Montantes, Non révocables, Sans limite de temps, Permettant plusieurs enchères par utilisateur
     </td>
