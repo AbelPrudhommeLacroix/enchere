@@ -16,7 +16,7 @@
      {id_produit, nom_caracteristique} → valeur_caracteristique <br><br>
      id_salle → {id_categorie} <br><br>
      id_vente → {id_produit, id_salle, prix_depart, date_fin, type_vente, est_montante, multiple_offres_autorisees, duree_limitee, est_revocable} <br><br>
-     {email, id_vente} → {prix_offre, quantite_souhaitee, date_heure_offre}
+     {email, id_vente, date_heure_offre} → {prix_offre, quantite_souhaitee}
     </td>
     <td style=" text-align: left;   border:1px solid">
      prix_revient > 0 <br><br>
