@@ -33,6 +33,10 @@
      Une vente peut avoir plusieurs offres ↠ <br><br>
      Une salle peut contenir plusieurs produits ↠ <br><br>
      Une catégorie peut avoir plusieurs produits ↠
+     Une vente n'a lieu que dans une seule salle
+     Une vente ne concerne qu'un seul produit
+     Une vente n'a lieu que dans une seule salle
+
     </td>
     <td style=" text-align: left; border:1px solid">
      Une vente à durée libre implique un délai maximal de 10 minutes entre deux offres <br><br>
