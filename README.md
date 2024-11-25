@@ -63,62 +63,39 @@
 - De même on implémente une association multiple entre caractéristique et produit qui donne une valeur. Plusieurs produits peuvent avoir une caractéristique , et un produit peut avoir plusieurs caractéristiques.
 
 <br>
+# Schéma Relationnel
 
-## Schéma Relationnel
-
-### Tables et leurs Attributs
+## Tables et leurs Attributs
 
 ### Produit
-- __id_produit__
-- nom_Produit
-- prix_Revient
-- Stock
-- _...nom_Categorie..._
+- __id_produit__, nom_Produit, prix_Revient, Stock, _...nom_Categorie..._
 
 ### Salle_de_Vente
-- __id_salle__
-- _...nom_Categorie..._
+- __id_salle__, _...nom_Categorie..._
 
 ### Vente
-- **__id_vente__**
-- prix_Depart
-- Sens
-- Revocabilité
-- Nb_offres
-- _...id_salle..._
-- _...id_produit..._
+- **__id_vente__**, prix_Depart, Sens, Revocabilité, Nb_offres, _...id_salle..._, _...id_produit..._
 
 ### Catégorie
-- __nom_Categorie__
-- Description
+- __nom_Categorie__, Description
 
 ### Offre
-- _...__email__..._
-- _...__id_vente__..._
-- _...__date__..._
-- Prix achat
-- Quantité
+- _...__email__..._, _...__id_vente__..._, _...__date__..._, Prix achat, Quantité
 
 ### Date
 - __date__
 
 ### VenteLimite
-- _...__id_vente__..._
-- date_Debut
-- date_Fin
+- _...__id_vente__..._, date_Debut, date_Fin
 
 ### Utilisateur
-- __email__
-- nom
-- prenom
-- adresse_postale
+- __email__, nom, prenom, adresse_postale
 
 ### Caracteristique
 - __nom_Caracteristique__
 
 ### Valeur_Caracteristique
-- _...__id_produit__..._
-- _...__nom_Caracteristique__..._
+- _...__id_produit__..._, _...__nom_Caracteristique__..._
 
 ---
 
@@ -126,5 +103,3 @@
 
 - __id__ ( Clef primaire )
 - _...id..._ ( Clef étrangère )
-
-
