@@ -12,47 +12,39 @@ public class AuctionApp {
 
     public static void accueil(void) {
         // Connexion à la base de données
-        Connection conn = null;
+        Connection conn = DatabaseConnection.getConnection();
         try {
-            // connexion base de données
-            // System.out.println("Connexion à la base de données réussie.");
-
-            Scanner scanner = new Scanner(System.in);
-            boolean exit = false;
-
-            while (!exit) {
-                System.out.println("\n=== Menu Principal ===");
-                System.out.println("1. Se connecter");
-                System.out.println("2. S'inscrire");
-                System.out.println("3. Quitter");
-                System.out.print("Choix : ");
-                int choice = scanner.nextInt();
-
-                switch (choice) {
-                    case 1 -> AuctionApp.menuEnchere(conn, scanner);
-                    case 2 -> Connection.register(conn, scanner);
-                    case 3 -> {
-                        System.out.println("Au revoir !");
-                        exit = true;
-                    }
-                    default -> System.out.println("Choix invalide. Veuillez réessayer.");
-                }
-            }
-
-            scanner.close();
-
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la connexion à la base de données : " + e.getMessage());
-        } finally {
-            // Fermeture de la connexion à la base de données
             if (conn != null) {
-                try {
-                    conn.close();
-                    System.out.println("Connexion à la base de données fermée.");
-                } catch (SQLException e) {
-                    e.printStackTrace();
+
+                Scanner scanner = new Scanner(System.in);
+                boolean exit = false;
+
+                while (!exit) {
+                    System.out.println("\n=== Menu Principal ===");
+                    System.out.println("1. Se connecter");
+                    System.out.println("2. S'inscrire");
+                    System.out.println("3. Quitter");
+                    System.out.print("Choix : ");
+                    int choice = scanner.nextInt();
+
+                    switch (choice) {
+                        case 1 -> Connection.login(conn, scanner);
+                        case 2 -> Connection.register(conn, scanner);
+                        case 3 -> {
+                            System.out.println("Au revoir !");
+                            exit = true;
+                        }
+                        default -> System.out.println("Choix invalide. Veuillez réessayer.");
+                    }
                 }
             }
+            scanner.close();
+            else {
+                System.err.println("Impossible de se connecter à la base de données.");
+            }
+
+        } finally {
+            DatabaseConnection.closeConnection(conn);
         }
     }
         
@@ -75,5 +67,10 @@ public class AuctionApp {
                 exit = true;
                 }
             }
+        }
+
+        public static void main(String[] args) {
+            System.out.println("Bienvenue dans l'application d'enchères !");
+            accueil();
         }
     }
