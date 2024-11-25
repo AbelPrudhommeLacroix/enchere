@@ -95,7 +95,7 @@
 - __nom_Caracteristique__
 
 ### Valeur_Caracteristique
-- _...__id_produit__..._, _...__nom_Caracteristique__..._
+- _...__id_produit__..._, _...__nom_Caracteristique__..._, valeur
 
 ---
 
