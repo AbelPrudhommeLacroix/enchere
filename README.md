@@ -87,9 +87,6 @@
 ### Date
 - __date__
 
-### VenteLibre
-- __id_vente__
-
 ### VenteLimite
 - _...__id_vente__..._
 - date_Debut
