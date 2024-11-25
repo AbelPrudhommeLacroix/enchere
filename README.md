@@ -46,11 +46,27 @@
 
 ## Schéma entité-association 
 
-![Schéma entité relation](Schema_EA.png)
+![Schéma entité relation](entite_association.png)
 
-# Schéma Relationnel
+### Justification
 
-## Tables et leurs Attributs
+- Une vente se passe dans une salle de vente, d’où l’association.
+
+- Une vente est soit une vente limitée possédant une date de fin ou de début, soit une vente libre n’en possédant pas. On crée alors une dépendance faible à vente pour garantir 1FN.
+
+- Toutes les autres informations concernant le type de vente se trouve dans Vente.
+
+- Une catégorie concerne une salle (car dans une salle on a des produits de la même catégorie) et donc un produit.
+
+- Il est logique d'implémenter une association multiple entre offre, vente utilisateur et la date d’une offre. L’ajout de DateHeureOffre permet de garantir l’unicité de l’association, car un utilisateur peut faire plusieurs offres mais à des dates différentes.
+
+- De même on implémente une association multiple entre caractéristique et produit qui donne une valeur. Plusieurs produits peuvent avoir une caractéristique , et un produit peut avoir plusieurs caractéristiques.
+
+<br>
+
+## Schéma Relationnel
+
+### Tables et leurs Attributs
 
 ### Produit
 - __id_produit__
