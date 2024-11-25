@@ -109,7 +109,7 @@
 
 ## Légende des Clés
 
-__id__ ( Clef primaire )
-_...id..._ ( Clef étrangère )
+- __id__ ( Clef primaire )
+- _...id..._ ( Clef étrangère )
 
 
