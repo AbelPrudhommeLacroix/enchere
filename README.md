@@ -36,7 +36,6 @@
      Une vente n'a lieu que dans une seule salle
      Une vente ne concerne qu'un seul produit
      Une vente n'a lieu que dans une seule salle
-
     </td>
     <td style=" text-align: left; border:1px solid">
      Une vente à durée libre implique un délai maximal de 10 minutes entre deux offres <br><br>
