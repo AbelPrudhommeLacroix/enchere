@@ -47,7 +47,7 @@
 
 ## Schéma entité-association 
 
-![Schéma entité relation](entite_association.png)
+![Schéma entité relation](Schema_EA.png)
 
 # Schéma Relationnel
 
