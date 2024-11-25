@@ -63,43 +63,32 @@
 - De même on implémente une association multiple entre caractéristique et produit qui donne une valeur. Plusieurs produits peuvent avoir une caractéristique , et un produit peut avoir plusieurs caractéristiques.
 
 <br>
-# Schéma Relationnel
 
-## Tables et leurs Attributs
+## Schéma Relationnel
 
-### Produit
-- __id_produit__, nom_Produit, prix_Revient, Stock, _...nom_Categorie..._
+### Implémentation, : 
 
-### Salle_de_Vente
-- __id_salle__, _...nom_Categorie..._
+_Produit_ : (**IdProduit**, NomProduit, PrixRevient, Stock, ...NomCategorie)
 
-### Vente
-- **__id_vente__**, prix_Depart, Sens, Revocabilité, Nb_offres, _...id_salle..._, _...id_produit..._
+_Salle de Vente_ : (**IdSalle**, ...NomCategorie)
 
-### Catégorie
-- __nom_Categorie__, Description
+_Vente_ : (**IdVente**, PrixDepart, Sens, Revocabilité, NbOffres, ...IdSalle..., ...IdProduit)
 
-### Offre
-- _...__email__..._, _...__id_vente__..._, _...__date__..._, Prix achat, Quantité
+_Catégorie_ : (**NomCategorie**, Description)
 
-### Date
-- __date__
+_Offre_ : (…**EmailUtilisateur**..., …**IdVente**..., …**DateHeureOffre**..., PrixAchat, QuantiteOffre)
 
-### VenteLimite
-- _...__id_vente__..._, date_Debut, date_Fin
+_Date de l’offre_ : ( **DateHeureOffre**)
 
-### Utilisateur
-- __email__, nom, prenom, adresse_postale
+_VenteLimite_ : (…**IdVente**..., DateDebut, DateFin)
 
-### Caracteristique
-- __nom_Caracteristique__
+_Utilisateur_ : (**EmailUtilisateur**, Nom, Prenom, AdressePostale)
 
-### Valeur_Caracteristique
-- _...__id_produit__..._, _...__nom_Caracteristique__..._, valeur
+_Caracteristique_ : (**NomCaracteristique**)
 
----
+_Valeur_Caracteristique_ : (…**IdProduit**..., …**NomCaracteristique**…)
 
-## Légende des Clés
+### Légende des Clés : 
+- **id** (Clef primaire)
+- ...id... (Clef étrangère)
 
-- __id__ ( Clef primaire )
-- _...id..._ ( Clef étrangère )
