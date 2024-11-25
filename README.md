@@ -54,15 +54,15 @@
 ## Tables et leurs Attributs
 
 ### Produit
-- **__id_produit__**
+- __id_produit__
 - nom_Produit
 - prix_Revient
 - Stock
-- **...nom_Categorie...**
+- _...nom_Categorie..._
 
 ### Salle_de_Vente
-- **__id_salle__**
-- **...nom_Categorie...**
+- __id_salle__
+- _...nom_Categorie..._
 
 ### Vente
 - **__id_vente__**
@@ -70,50 +70,50 @@
 - Sens
 - Revocabilité
 - Nb_offres
-- **...id_salle...**
-- **...id_produit...**
+- _...id_salle..._
+- _...id_produit..._
 
 ### Catégorie
-- **__nom_Categorie__**
+- __nom_Categorie__
 - Description
 
 ### Offre
-- **...__email__...**
-- **...__id_vente__...**
-- **...__date__...**
+- _...__email__..._
+- _...__id_vente__..._
+- _...__date__..._
 - Prix achat
 - Quantité
 
 ### Date
-- **__date__**
+- __date__
 
 ### VenteLibre
-- **__id_vente__**
+- __id_vente__
 
 ### VenteLimite
-- **__...id_vente...__**
+- _...__id_vente__..._
 - date_Debut
 - date_Fin
 
 ### Utilisateur
-- **__email__**
+- __email__
 - nom
 - prenom
 - adresse_postale
 
 ### Caracteristique
-- **__nom_Caracteristique__**
+- __nom_Caracteristique__
 
 ### Valeur_Caracteristique
-- **__...id_produit...__**
-- **__...nom_Caracteristique...__**
+- _...__id_produit__..._
+- _...__nom_Caracteristique__..._
 - valeur
 
 ---
 
 ## Légende des Clés
 
-- **__Clés Primaires__** : Soulignées  
-- **...Clés Étrangères...** : Soulignées en pointillé
+__id__ ( Clef primaire )
+_...id..._ ( Clef étrangère )
 
 
