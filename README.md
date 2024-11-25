@@ -48,3 +48,72 @@
 ## Schéma entité-association 
 
 ![Schéma entité relation](entite_association.png)
+
+# Schéma Relationnel
+
+## Tables et leurs Attributs
+
+### Produit
+- **__id_produit__**
+- nom_Produit
+- prix_Revient
+- Stock
+- **...nom_Categorie...**
+
+### Salle_de_Vente
+- **__id_salle__**
+- **...nom_Categorie...**
+
+### Vente
+- **__id_vente__**
+- prix_Depart
+- Sens
+- Revocabilité
+- Nb_offres
+- **...id_salle...**
+- **...id_produit...**
+
+### Catégorie
+- **__nom_Categorie__**
+- Description
+
+### Offre
+- **...__email__...**
+- **...__id_vente__...**
+- **...__date__...**
+- Prix achat
+- Quantité
+
+### Date
+- **__date__**
+
+### VenteLibre
+- **__id_vente__**
+
+### VenteLimite
+- **__...id_vente...__**
+- date_Debut
+- date_Fin
+
+### Utilisateur
+- **__email__**
+- nom
+- prenom
+- adresse_postale
+
+### Caracteristique
+- **__nom_Caracteristique__**
+
+### Valeur_Caracteristique
+- **__...id_produit...__**
+- **__...nom_Caracteristique...__**
+- valeur
+
+---
+
+## Légende des Clés
+
+- **__Clés Primaires__** : Soulignées  
+- **...Clés Étrangères...** : Soulignées en pointillé
+
+
