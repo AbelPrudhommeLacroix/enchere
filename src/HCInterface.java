@@ -1,3 +1,4 @@
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.io.IOException;
 import java.sql.*;
@@ -28,7 +29,15 @@ public class HCInterface {
                 System.out.println("5. Quitter");
 
                 System.out.print("Votre choix : ");
-                int choice = scanner.nextInt();
+
+                int choice;
+                try {
+                    choice = scanner.nextInt();
+                } catch (Exception e) {
+                    scanner.nextLine();
+                    System.out.println("[!] Choix invalide");
+                    continue;
+                }
 
                 switch (choice) {
                     case 1 -> menuCreationSalle(conn, scanner);
@@ -47,6 +56,7 @@ public class HCInterface {
     }
 
 
+
     public static void menuCreationSalle(Connection conn, Scanner scanner) {
 
         System.out.println("\n=== Création d'une salle ===");
@@ -57,17 +67,72 @@ public class HCInterface {
             String categories = DBQueries.searchCategories(conn, scanner);
             System.out.println(categories);
         } catch (SQLException e) {
-            System.out.println("[!] Erreur dans l'affichage des categories : " + e); 
+            System.err.println("[!] Erreur dans l'affichage des categories : " + e); 
             return;
         }
 
         //Choix de la catégorie
-        System.out.println("La catégorie de votre salle : ");
+        System.out.print("La catégorie de votre salle : ");
         String categorie = scanner.next(); 
+        try {
+            if (!DBQueries.doesCategoryExist(conn, categorie)) throw new Exception();
+        } catch (Exception e){
+            System.err.println("[!] La categorie n'existe pas / n'a pas était trouvé"); 
+            return;
+        }
+
+        //Sens des ventes
+        System.out.print("Sens des ventes (croissant/decroissant) : ");
+        String sens = scanner.next();
+        if (!sens.equals("croissant") && !sens.equals("decroissant")) {
+            System.err.println("[!] Mauvais choix, choix disponible : (croissant/decroissant)");
+            return;
+        }
+
+        //Revocabilite
+        int revocabilite;
+        System.out.print("Revocabilite (oui/non) : ");
+        String revocabilite_choix = scanner.next();
+        switch (revocabilite_choix) {
+            case "oui" -> revocabilite = 1;
+            case "non" -> revocabilite = 0;
+            default -> {
+                System.err.println("[!] Mauvais choix, choix disponible : (oui/non)");
+                return;
+            }
+        }
+
+        //Nombre d'offre max
+        System.out.print("Nombre d'offres maximum : ");
+        try {
+            int nb_offre = scanner.nextInt();
+            if (nb_offre <= 0) throw new Exception();
+        } catch (Exception e) {
+            System.err.println("[!] Veuillez renseigner un entier strictement positif.");
+            scanner.nextLine();
+            return;
+        }
+
+        //Duree de la vente
+        System.out.print("Duree de la vente (libre/limite) : ");
+        String duree_vente = scanner.next();
+        if (!duree_vente.equals("libre") && !duree_vente.equals("limite")) {
+            System.err.println("[!] Mauvais choix, choix disponible : (croissant/decroissant)");
+            return;
+        }
 
         //Creation de la salle
-        DBQueries.creationSalle(conn, scanner, categorie);
+        try {
+            DBQueries.creationSalle(conn, scanner, categorie);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la creation de la salle : " + e.getMessage());
+        }
+
+        //Creation des produits de la salle TODO
+        //TODO : produits ici avec une boucle while en gros dans un autre menu par exemple 1- ajouter un nv produit 2 - terminer
     }
+
+
 
 
     

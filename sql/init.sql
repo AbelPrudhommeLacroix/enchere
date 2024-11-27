@@ -17,11 +17,11 @@ INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (3, 'Livres');
 
 -- Table Vente
 INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES 
-(1, 150.00, 'Croissant', 1, 5, 1, 1); 
+(1, 150.00, 'croissant', 1, 5, 1, 1); 
 INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES 
-(2, 30.00, 'Décroissant', 0, 2, 2, 2); 
+(2, 30.00, 'decroissant', 0, 2, 2, 2); 
 INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES 
-(3, 5.00, 'Croissant', 1, 10, 3, 3); 
+(3, 5.00, 'croissant', 1, 10, 3, 3); 
 
 -- Table Utilisateur
 INSERT INTO Utilisateur (EmailUtilisateur, Nom, Prenom, AdressePostale) VALUES ('alice@example.com', 'Dupont', 'Alice', '123 Rue Principale');

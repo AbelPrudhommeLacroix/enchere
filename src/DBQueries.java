@@ -7,31 +7,32 @@ import java.util.Scanner;
 public class DBQueries {
 
 
-//Execute un fichier .sql ligne par ligne
-public static void executeSQLFile(Connection conn, String filePath) throws SQLException, IOException {
-    Statement stmt = conn.createStatement();
+    //Execute un fichier .sql ligne par ligne
+    public static void executeSQLFile(Connection conn, String filePath) throws SQLException, IOException {
+        Statement stmt = conn.createStatement();
 
-    BufferedReader reader = new BufferedReader(new FileReader(filePath));
-    StringBuilder sqlBuilder = new StringBuilder();
-    String line;
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        StringBuilder sqlBuilder = new StringBuilder();
+        String line;
 
-    while ((line = reader.readLine()) != null) {
-        line = line.trim();
-        if (line.isEmpty() || line.startsWith("--")) {
-            continue;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("--")) {
+                continue;
+            }
+            sqlBuilder.append(line);
+
+            if (line.endsWith(";")) { //On execute a chaque point virgule
+                String sql = sqlBuilder.toString();
+                sqlBuilder.setLength(0); 
+                sql = sql.substring(0, sql.length() - 1);
+                stmt.execute(sql);
+            }
         }
-        sqlBuilder.append(line);
-
-        if (line.endsWith(";")) { //On execute a chaque point virgule
-            String sql = sqlBuilder.toString();
-            sqlBuilder.setLength(0); 
-            sql = sql.substring(0, sql.length() - 1);
-            stmt.execute(sql);
-        }
+        reader.close();
     }
-    reader.close();
-}
 
+    
     //Renvoi les catégories (ou throw une exception si la requette ne reussie pas)
     public static String searchCategories(Connection conn, Scanner scanner) throws SQLException {
 
@@ -52,6 +53,76 @@ public static void executeSQLFile(Connection conn, String filePath) throws SQLEx
         return categories;
     }
 
+
+    //Renvoi true si une Categorie avec le nomCategorie existe
+    public static boolean doesCategoryExist(Connection conn, String nomCategorie) throws SQLException {
+
+        String checkCategorySql = "SELECT 1 FROM Categorie WHERE NomCategorie = ?";
+        PreparedStatement stmt = conn.prepareStatement(checkCategorySql);
+        stmt.setString(1, nomCategorie);
+        ResultSet rs = stmt.executeQuery();
+    
+        boolean categoryExists = rs.next();
+        rs.close();
+
+        return categoryExists;
+    }
+
+
+    //Renvoi l'id de la salle le plus grand (1 si aucune salle existe)
+    public static int getMaxSalleId(Connection conn) throws SQLException {
+
+        String getMaxSalleIdSql = "SELECT IdSalle FROM SalleDeVente ORDER BY IdSalle DESC FETCH FIRST 1 ROWS ONLY";
+        PreparedStatement stmt = conn.prepareStatement(getMaxSalleIdSql);
+    
+        // Exécuter la requête
+        ResultSet rs = stmt.executeQuery();
+    
+        if (rs.next()) {
+            int maxSalleId = rs.getInt("IdSalle");
+            rs.close();
+            return maxSalleId; 
+        } else {
+            rs.close();
+            return 1;
+        }
+    }
+
+
+    //Creer une salle avec la categorie categorie
+    public static void creationSalle(Connection conn, Scanner scanner, String categorie) throws SQLException {
+
+        int idSalle = getMaxSalleId(conn) + 1; // Id unique
+
+        String insertUserSql = "INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (?, ?)";
+        PreparedStatement insertStmt = conn.prepareStatement(insertUserSql);
+        insertStmt.setInt(1, idSalle);
+        insertStmt.setString(2, categorie);
+        insertStmt.executeQuery();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //ANCIEN TRUC EN BAS
 
 
     // Method to list a product for auction
@@ -91,25 +162,6 @@ public static void executeSQLFile(Connection conn, String filePath) throws SQLEx
 
 
 
-    public static void creationSalle(Connection conn, Scanner scanner, String categorie) {
-        try {
-            System.out.println("\n --- Création automatique de la salle de vente ---");
-
-            //TODO : Salle ID = max(SalleID) + 1 (avec requette SQL)
-            int idSalle = 0; 
-
-            String insertUserSql = "INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (?, ?)";
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
-                insertStmt.setInt(1, idSalle);
-                insertStmt.setString(2, categorie);
-                System.out.println("Salle de vente " + idSalle + "crée depuis la catégorie " + categorie);
-            }
-    
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Une erreur est survenue lors de la création de la salle de vente.");
-        }
-    }
 
 
     
