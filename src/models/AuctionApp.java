@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class AuctionApp {
 
-    public static void accueil(void) {
+    public static void accueil(Scanner scan) {
         // Connexion à la base de données
         Connection conn = DatabaseConnection.getConnection();
         try {

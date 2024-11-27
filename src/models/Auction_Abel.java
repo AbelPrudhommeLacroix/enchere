@@ -12,7 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-public class Auction {
+public class Auction_Abel {
     /*
     Ajout d'un produit à la BDD avec toutes ses caractéristiques
     */
