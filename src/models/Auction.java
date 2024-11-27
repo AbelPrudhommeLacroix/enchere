@@ -1,156 +1,54 @@
-/* point d'entrée principal de ton application Java
-initialise l'interface utilisateur et configure les 
-scènes pour naviguer entre les différentes fenêtres
-*/
-
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Auction {
 
-    public static void vente(void) {
-        // Connexion à la base de données
-        Connection conn = null;
+    // Method to list a product for auction
+    public static void listProduct(Connection conn, Scanner scanner) {
         try {
-            // connexion base de données
-            // System.out.println("Connexion à la base de données réussie.");
+            System.out.println("\n=== Add your product ===");
+            System.out.print("Name: ");
+            String name = scanner.next();
 
-            Scanner scanner = new Scanner(System.in);
-            boolean exit = false;
+            System.out.print("Price: ");
+            float price = scanner.nextFloat();
 
-            while (!exit) {
-                System.out.println("\n=== Menu Principal ===");
-                System.out.println("1. Mettre en vente un produit");
-                System.out.println("2. Enchérir");
-                System.out.println("3. Voir l'etat d'une vente");
-                System.out.println("4. Quitter");
-                System.out.print("Choix : ");
-                int choice = scanner.nextInt();
+            System.out.print("Stock: ");
+            int stock = scanner.nextInt();
 
-                switch (choice) {
-                    case 1 -> Auction.ajoutProduit(conn, scanner);
-                    case 2 -> Auction.encherir(conn, scanner);
-                    case 3 -> Auction.etatVente(conn, scanner);
-                    case 4 -> {
-                        System.out.println("Au revoir !");
-                        exit = true;
-                    }
-                    default -> System.out.println("Choix invalide. Veuillez réessayer.");
-                }
+            System.out.print("Category: ");
+            scanner.nextLine(); // consume newline
+            String category = scanner.nextLine();
+
+            // Simulate ID generation (in real application use auto-increment)
+            int productId = (int) (Math.random() * 10000);
+
+            String insertProductSql = "INSERT INTO Products (name, price, stock, category) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(insertProductSql)) {
+                stmt.setString(1, name);
+                stmt.setFloat(2, price);
+                stmt.setInt(3, stock);
+                stmt.setString(4, category);
+                stmt.executeUpdate();
+                System.out.println("Product added!");
             }
-
-            scanner.close();
 
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la connexion à la base de données : " + e.getMessage());
-        } finally {
-            // Fermeture de la connexion à la base de données
-            if (conn != null) {
-                try {
-                    conn.close();
-                    System.out.println("Connexion à la base de données fermée.");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            System.err.println("Error adding product: " + e.getMessage());
         }
     }
-        
-    /*
-    Ajout d'un produit à la BDD avec toutes ses caractéristiques
-    */
-    public static void ajoutProduit(void) {
-        try {
-            System.out.println("\n=== Ajout de votre produit ===");
-            System.out.print("Nom : ");
-            String nom = scanner.next();
 
-            System.out.print("Prix de revient : ");
-            float prixRevient = scanner.next();
-
-            System.out.print("Stock : ");
-            int stock = scanner.next();
-
-            System.out.print("Catégorie : ");
-            String categorie = scanner.next();
-
-            int idProduit = 0       // générer un idProduit
-
-            String insertUserSql = "INSERT INTO Produit (IdProduit, nom, prixRevient, stock, categorie) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
-                insertStmt.setString(1, idProduit);
-                insertStmt.setString(2, nom);
-                insertStmt.setString(3, prix);
-                insertStmt.setString(4, stock);
-                insertStmt.setString(5, categorie);
-                System.out.println("Produit ajouté");
-            }
-
-
-        // ajout caractéristiques
-        System.out.print("Avez vous des caractéristiques à préciser : ");
-        System.out.print("1. OUI ");
-        System.out.print("2. NON ");
-        System.out.print("Choix : ");
-        int choice = scanner.nextInt();
-
-        switch (choice) {
-            case 1 -> Auction.ajoutCaracteristiques(idProduit);
-            case 2 -> Auction.vente()       // retour à la page de vente
-            }
-        
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Une erreur est survenue lors de l'ajout du produit.");
-        }
-        AuctionApp.main();
+    // Method to handle bidding
+    public static void bid(Connection conn, Scanner scanner) {
+        // Add bidding logic (placeholder for now)
+        System.out.println("Bidding functionality not implemented yet.");
     }
 
-
-
-    public static void creationSalle(String categorie) {}
-
-    public static void creationVente(){}
-
-    public static void ajoutCaracteristique(int IdProduit){
-        try {
-            System.out.println("\n=== Ajout caracteristique ===");
-            System.out.print("Nom caractéristique : ");
-            String nomCaract = scanner.next();
-
-            System.out.print("Valeur : ");
-            String valCaract = scanner.next();
-
-
-            String insertUserSql = "INSERT INTO Produit (IdProduit, nom, prixRevient, stock, categorie) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
-                insertStmt.setString(1, idProduit);
-                insertStmt.setString(2, nom);
-                System.out.println("Produit ajouté");
-            }
-
-
-        // ajout caractéristiques
-        System.out.print("Avez vous des caractéristiques à préciser : ");
-        System.out.print("1. OUI ");
-        System.out.print("2. NON ");
-        System.out.print("Choix : ");
-        int choice = scanner.nextInt();
-
-        switch (choice) {
-            case 1 -> Auction.ajoutCaracteristiques(idProduit);
-            case 2 -> Auction.vente()       // retour à la page de vente
-            }
-        
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Une erreur est survenue lors de l'ajout du produit.");
-        }
-        AuctionApp.main();
+    // Method to view auction status
+    public static void viewAuctionStatus(Connection conn, Scanner scanner) {
+        // Add logic to view auction status (placeholder for now)
+        System.out.println("View auction status functionality not implemented yet.");
     }
-
 }
