@@ -68,25 +68,25 @@
 
 ### Implémentation, : 
 
-_Produit_ : (**IdProduit**, NomProduit, PrixRevient, Stock, ...NomCategorie)
+_Produit_ : (**IdProduit**, NomProduit, PrixRevient, Stock, ...NomCategorie...)
 
-_Salle de Vente_ : (**IdSalle**, ...NomCategorie)
+_Salle de Vente_ : (**IdSalle**, ...NomCategorie...)
 
 _Vente_ : (**IdVente**, PrixDepart, Sens, Revocabilité, NbOffres, ...IdSalle..., ...IdProduit)
 
 _Catégorie_ : (**NomCategorie**, Description)
 
-_Offre_ : (…**EmailUtilisateur**..., …**IdVente**..., …**DateHeureOffre**..., PrixAchat, QuantiteOffre)
+_Offre_ : (...**EmailUtilisateur**..., ...**IdVente**..., ...**DateHeureOffre**..., PrixAchat, QuantiteOffre)
 
 _Date de l’offre_ : ( **DateHeureOffre**)
 
-_VenteLimite_ : (…**IdVente**..., DateDebut, DateFin)
+_VenteLimite_ : (...**IdVente**..., DateDebut, DateFin)
 
 _Utilisateur_ : (**EmailUtilisateur**, Nom, Prenom, AdressePostale)
 
 _Caracteristique_ : (**NomCaracteristique**)
 
-_Valeur_Caracteristique_ : (…**IdProduit**..., …**NomCaracteristique**…)
+_Valeur_Caracteristique_ : (...**IdProduit**..., …**NomCaracteristique**…)
 
 ### Légende des Clés : 
 - **id** (Clef primaire)

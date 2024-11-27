@@ -1,10 +1,9 @@
--- Table des catégories de produits
 CREATE TABLE Categorie (
     NomCategorie VARCHAR(255) PRIMARY KEY NOT NULL,
     Description TEXT
 );
 
--- Table des produits
+
 CREATE TABLE Produit (
     IdProduit INT PRIMARY KEY NOT NULL,
     NomProduit VARCHAR(255) NOT NULL,
@@ -14,14 +13,14 @@ CREATE TABLE Produit (
     FOREIGN KEY (NomCategorie) REFERENCES Categorie(NomCategorie)
 );
 
--- Table des salles de vente
+
 CREATE TABLE SalleDeVente (
     IdSalle INT PRIMARY KEY NOT NULL,
     NomCategorie VARCHAR(255),
     FOREIGN KEY (NomCategorie) REFERENCES Categorie(NomCategorie)
 );
 
--- Table des ventes
+
 CREATE TABLE Vente (
     IdVente INT PRIMARY KEY NOT NULL,
     PrixDepart DECIMAL(10, 2),
@@ -34,7 +33,7 @@ CREATE TABLE Vente (
     FOREIGN KEY (IdProduit) REFERENCES Produit(IdProduit)
 );
 
--- Table des utilisateurs
+
 CREATE TABLE Utilisateur (
     EmailUtilisateur VARCHAR(255) PRIMARY KEY NOT NULL,
     Nom VARCHAR(255) NOT NULL,
@@ -42,7 +41,12 @@ CREATE TABLE Utilisateur (
     AdressePostale TEXT
 );
 
--- Table des offres faites sur une vente
+
+CREATE TABLE DateOffre (
+    DateHeureOffre DATETIME PRIMARY KEY NOT NULL
+);
+
+
 CREATE TABLE Offre (
     EmailUtilisateur VARCHAR(255),
     IdVente INT,
@@ -52,14 +56,10 @@ CREATE TABLE Offre (
     PRIMARY KEY (EmailUtilisateur, IdVente, DateHeureOffre),
     FOREIGN KEY (EmailUtilisateur) REFERENCES Utilisateur(EmailUtilisateur),
     FOREIGN KEY (IdVente) REFERENCES Vente(IdVente)
+    FOREIGN KEY (DateHeureOffre) REFERENCES DateOffre(DateHeureOffre)
 );
 
--- Table des dates des offres
-CREATE TABLE DateOffre (
-    DateHeureOffre DATETIME PRIMARY KEY NOT NULL
-);
 
--- Table des ventes limitées dans le temps
 CREATE TABLE VenteLimite (
     IdVente INT,
     DateDebut DATETIME,
@@ -68,16 +68,16 @@ CREATE TABLE VenteLimite (
     FOREIGN KEY (IdVente) REFERENCES Vente(IdVente)
 );
 
--- Table des caractéristiques de produits
+
 CREATE TABLE Caracteristique (
     NomCaracteristique VARCHAR(255) PRIMARY KEY NOT NULL
 );
 
--- Table des valeurs associées aux caractéristiques des produits
+
 CREATE TABLE ValeurCaracteristique (
     IdProduit INT,
     NomCaracteristique VARCHAR(255),
     PRIMARY KEY (IdProduit, NomCaracteristique),
     FOREIGN KEY (IdProduit) REFERENCES Produit(IdProduit),
     FOREIGN KEY (NomCaracteristique) REFERENCES Caracteristique(NomCaracteristique)
-);+
+);
