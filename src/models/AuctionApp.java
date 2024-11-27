@@ -59,7 +59,7 @@ public class AuctionApp {
         int choice = scanner.nextInt();
 
         switch (choice) {
-            case 1 -> Auction.vente(conn, scanner);
+            case 1 -> Auction.ajoutProduit(conn, scanner);
             case 2 -> Auction.encherir(conn, scanner);
             case 3 -> Auction.etatVente(conn, scanner);
             case 4 -> {

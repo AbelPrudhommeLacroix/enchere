@@ -23,20 +23,24 @@ public class Connection {
             scanner.nextLine(); // Pour capturer le saut de ligne précédent
             String adresse = scanner.nextLine();
 
-            String insertUserSql = "INSERT INTO users (email, nom, prenom, adresse) VALUES (?, ?, ?, ?)";
+            String insertUserSql = "INSERT INTO users (email, nom, prenom, adresse) VALUES (?, ?, ?, ?)"; //TODO
             try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
                 insertStmt.setString(1, email);
                 insertStmt.setString(2, nom);
                 insertStmt.setString(3, prenom);
                 insertStmt.setString(4, adresse);
                 System.out.println("Inscription réussie ! Vous pouvez maintenant vous connecter.");
-            }
+            }String loginSql = "SELECT * FROM users WHERE email = ?";
+
+            try (PreparedStatement loginStmt = conn.prepareStatement(loginSql)) {
+                loginStmt.setString(1, email);
+    
 
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Une erreur est survenue lors de l'inscription.");
         }
-        AuctionApp.main();
+        AuctionApp.accueil();
     }
 
     public static void login(Connection conn, Scanner scanner){
@@ -65,7 +69,8 @@ public class Connection {
             e.printStackTrace();
             System.out.println("Une erreur est survenue lors de la connexion.");
         }
-        AuctionApp.main();
+        AuctionApp.accueil();
+        }
     }
 }
 
