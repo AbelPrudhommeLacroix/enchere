@@ -4,7 +4,7 @@ public class DatabaseConnection {
 
     public static Connection getConnection() {
         // Oracle JDBC connection URL
-        String url = "jdbc:oracle:thin:@oracle1.ensimag.fr:1521:oracle1"; // Replace with your Oracle database URL
+        String url = "jdbc:oracle:thin:@oracle1.ensimag.fr:1521:oracle1"; 
         String username = "zimmermh"; 
         String password = "zimmermh"; 
 

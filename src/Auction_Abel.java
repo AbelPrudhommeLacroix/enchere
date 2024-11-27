@@ -4,9 +4,6 @@ scènes pour naviguer entre les différentes fenêtres
 */
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -221,7 +218,7 @@ public class Auction_Abel {
             int Idvente = scanner.nextInt();
 
             String query = "SELECT NbOffres, Revocabilite, Sens FROM Vente WHERE Vente.IdVente = ?";
-            PreparedStatement statement = conn.prepareStatement(query)
+            PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, Idvente);
     
             ResultSet resultSet = statement.executeQuery();
@@ -229,8 +226,6 @@ public class Auction_Abel {
             int nbOffres = resultSet.getInt("NbOffres");
             boolean revocabilite = resultSet.getBoolean("Revocabilite");
             String sens = resultSet.getString("Sens");
-
-            if (sens == "Montantes", revocabilite == "non révocable",  ){}
                 
 
 
