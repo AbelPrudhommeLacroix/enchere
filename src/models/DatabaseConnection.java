@@ -1,14 +1,12 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DatabaseConnection {
 
     public static Connection getConnection() {
         // Oracle JDBC connection URL
         String url = "jdbc:oracle:thin:@oracle1.ensimag.fr:1521:oracle1"; // Replace with your Oracle database URL
-        String username = "zimmermh"; // Replace with your Oracle username
-        String password = "zimmermh"; // Replace with your Oracle password
+        String username = "zimmermh"; 
+        String password = "zimmermh"; 
 
         try {
             // Load the Oracle JDBC driver
