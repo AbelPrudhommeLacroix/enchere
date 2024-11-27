@@ -129,6 +129,7 @@ GROUP BY EmailUtilisateur
 
 ### Mise en place d_une salle de vente
 
+##Comparer la catégorie du produit qu_on veut ajouter à la salle avec la catégorie de la salle
 # Récupérer la catégorie de la salle de Vente
 
 SELECT *
@@ -142,4 +143,30 @@ SELECT *
 FROM Catégorie, Produit
 WHERE Catégorie.NomCatégorie = Produit.NomCatégorie
 
-# Récupérer 
+##Comparer le type de la vente avec celui des ventes faites dans la salle
+# Récupérer le Sens des ventes de la salle
+
+SELECT Sens
+FROM Vente, SalleDeVente
+WHERE Vente.IdSalle = SalleDeVente.IdSalle
+Group by Sens
+
+# Récupérer la révocabilité des ventes de la salle
+
+SELECT Revocabilite
+FROM Vente, SalleDeVente
+WHERE Vente.IdSalle = SalleDeVente.IdSalle
+Group by Revocabilite
+
+# Récupérer le nombre d_offres des ventes de la salle
+
+SELECT NbOffres
+FROM Vente, SalleDeVente
+WHERE Vente.IdSalle = SalleDeVente.IdSalle
+Group by NbOffres
+
+# Récupérer le type de la vente qu_on veut ajouter à la salle
+
+SELECT *
+FROM Vente
+WHERE Vente.IdVente = IdVenteVoulue
