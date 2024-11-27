@@ -1,50 +1,93 @@
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-public class Auction {
-
-    // Method to list a product for auction
+public class Auction_Abel {
+    /*
+    Ajout d'un produit à la BDD avec toutes ses caractéristiques
+    */
     public static void ajoutProduit(Connection conn, Scanner scanner) {
-        try {
-            System.out.println("\n=== Add your product ===");
-            System.out.print("Name: ");
-            String name = scanner.next();
+    try {
+        System.out.println("\n=== Ajout de votre produit ===\n");
+        System.out.print("Nom : ");
+        String nom = scanner.next();
 
-            System.out.print("Price: ");
-            float price = scanner.nextFloat();
+        System.out.print("Prix de revient : ");
+        float prixRevient; // decimal en sql
+        while (true) {
+            try {
+                prixRevient = scanner.nextFloat();
+                break;
+            } catch (Exception e) {
+                System.out.println("Veuillez entrer un prix valide (nombre).");
+                scanner.next(); // Nettoie l'entrée incorrecte
+            }
+        }
 
-            System.out.print("Stock: ");
-            int stock = scanner.nextInt();
+        System.out.print("Stock : ");
+        int stock;  // int en sql
+        while (true) {
+            try {
+                stock = scanner.nextInt();
+                break;
+            } catch (Exception e) {
+                System.out.println("Veuillez entrer un stock valide (nombre entier).");
+                scanner.next(); // Nettoie l'entrée incorrecte
+            }
+        }
 
-            System.out.print("Category: ");
-            scanner.nextLine(); // consume newline
-            String category = scanner.nextLine();
+        System.out.print("Catégorie : ");
+        String categorie = scanner.next();
 
-            // Simulate ID generation (in real application use auto-increment)
-            int productId = (int) (Math.random() * 10000);
+        int idProduit = 0; //à générer
 
-            String insertProductSql = "INSERT INTO Products (name, price, stock, category) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(insertProductSql)) {
-                stmt.setString(1, name);
-                stmt.setFloat(2, price);
-                stmt.setInt(3, stock);
-                stmt.setString(4, category);
-                stmt.executeUpdate();
-                System.out.println("Product added!");
+        String insertUserSql = "INSERT INTO Produit (IdProduit, nom, prixRevient, stock, categorie) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)) {
+            insertStmt.setInt(1, idProduit);
+            insertStmt.setString(2, nom);
+            insertStmt.setFloat(3, prixRevient);
+            insertStmt.setInt(4, stock);
+            insertStmt.setString(5, categorie);
+            insertStmt.executeUpdate();
+            System.out.println("Produit ajouté avec succès !");
+        }
+
+        System.out.print("Avez-vous des caractéristiques à préciser : ");
+        boolean val = true;
+
+        while (val) {
+            System.out.println("1. OUI");
+            System.out.println("2. NON");
+            System.out.print("Choix : ");
+            int choice;
+            try {
+                choice = scanner.nextInt();
+            } catch (Exception e) {
+                System.out.println("Veuillez entrer un choix valide (1 ou 2).");
+                scanner.next(); // Nettoie l'entrée incorrecte
+                continue;
             }
 
-        } catch (SQLException e) {
-            System.err.println("Error adding product: " + e.getMessage());
+            switch (choice) {
+                case 1 -> DBQueries.ajoutCaracteristique(conn, scanner, idProduit);
+                case 2 -> val = false;
+                default -> System.out.println("Choix invalide. Veuillez entrer 1 ou 2.");
+            }
         }
+
+        // Retour au menu enchère
+        AuctionApp.menuEnchere(conn, scanner);
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        System.out.println("Une erreur est survenue lors de l'ajout du produit.");
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Erreur inattendue.");
     }
-
-
+}
 
     public static void creationSalle(Connection conn, Scanner scanner, String categorie) {
         try {
@@ -66,7 +109,7 @@ public class Auction {
     }
 
 
-    
+    public static void creationVente(){}
     
 
     public static void creationVente(Connection conn, Scanner scanner, int IdVente, 
@@ -178,6 +221,7 @@ public class Auction {
             int nbOffres = resultSet.getInt("NbOffres");
             boolean revocabilite = resultSet.getBoolean("Revocabilite");
             String sens = resultSet.getString("Sens");
+                
 
 
         } catch (SQLException e) {
@@ -191,7 +235,3 @@ public class Auction {
     public static void associerSalleVente(Connection conn, Scanner scanner){}
 
 }
-
-
-
-   

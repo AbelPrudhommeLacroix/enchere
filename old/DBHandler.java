@@ -37,7 +37,7 @@ public class DBHandler {
             e.printStackTrace();
             System.out.println("Une erreur est survenue lors de l'inscription.");
         }
-        AuctionApp.main(new String[]{});
+        HCInterface.main(new String[]{});
     }    
 
     public static void login(Connection conn, Scanner scanner){
@@ -57,7 +57,7 @@ public class DBHandler {
             if (rs.next()) {
                 // Connexion réussie
                 System.out.println("Connexion réussie. Bienvenue, " + rs.getString("Nom") + " " + rs.getString("Prenom") + " !");
-                AuctionApp.menuEnchere(conn, scanner);
+                HCInterface.menuEnchere(conn, scanner);
             } else {
                 // Échec de connexion
                 System.out.println("Email incorrect. Veuillez réessayer.");
@@ -66,6 +66,6 @@ public class DBHandler {
             e.printStackTrace();
             System.out.println("Une erreur est survenue lors de la connexion.");
         }
-        AuctionApp.main(new String[]{});
+        HCInterface.main(new String[]{});
     }    
 }
