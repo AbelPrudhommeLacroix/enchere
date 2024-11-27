@@ -23,7 +23,7 @@ public class Connection {
             scanner.nextLine(); // Pour capturer le saut de ligne précédent
             String adresse = scanner.nextLine();
 
-            String insertUserSql = "INSERT INTO users (email, nom, prenom, adresse) VALUES (?, ?, ?, ?)";
+            String insertUserSql = "INSERT INTO user (email, nom, prenom, adresse) VALUES (?, ?, ?, ?)";
             try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
                 insertStmt.setString(1, email);
                 insertStmt.setString(2, nom);

@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class AuctionApp {
 
-    public static void accueil(void) {
+    public static void accueil(Scanner scan) {
         // Connexion à la base de données
         Connection conn = DatabaseConnection.getConnection();
         try {
@@ -59,7 +59,7 @@ public class AuctionApp {
         int choice = scanner.nextInt();
 
         switch (choice) {
-            case 1 -> Auction.vente(conn, scanner);
+            case 1 -> Auction.ajoutProduit(conn, scanner);
             case 2 -> Auction.encherir(conn, scanner);
             case 3 -> Auction.etatVente(conn, scanner);
             case 4 -> {
