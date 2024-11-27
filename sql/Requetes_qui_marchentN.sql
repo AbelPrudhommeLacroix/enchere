@@ -2,19 +2,20 @@
 
 
 -- Si la vente est montante
--- Vérifier que l_offre est bien supérieure à la dernière offre effectuée
--- Renvoie la dernière offre effectuée et le prix d_achat de celle-ci
+-- Pour ensuite vérifier que l'offre est bien supérieure à la dernière offre effectuée
+-- On renvoie la dernière offre effectuée et le prix d'achat de celle-ci qu'on comparera avec le prix d'achat de l'offre proposée
 SELECT Offre.DateHeureOffre, Offre.PrixAchat
 FROM Offre
 JOIN Vente ON Offre.IdVente = Vente.IdVente
 JOIN DateOffre ON Offre.DateHeureOffre = DateOffre.DateHeureOffre
+WHERE Vente.IdVente = :idVente
 ORDER BY DateOffre.DateHeureOffre DESC
 LIMIT 1;
 
 
 -- Si le nombre d_offres est limité
 -- Compter les offres de quelqu_un pour les ventes à offres limitées 
---(si ça concerne une vente avec une offre max et que l_utilisateur a déjà fait une offre on accepte pas sa nouvelle offre)
+--(si ça concerne une vente avec une offre max et que l'utilisateur a déjà fait une offre on accepte pas sa nouvelle offre)
 
 SELECT COUNT(*) AS NombreOffres
 FROM Offre
@@ -23,7 +24,7 @@ AND Offre.IdVente = :idVente;
 
 
 -- Si la durée est limitée
--- Vérifier que l_offre a été effectuée avant la date de fin de la vente
+-- Vérifier que l'offre a été effectuée avant la date de fin de la vente
 
 SELECT COUNT(*) AS OffreValide
 FROM Offre
@@ -43,5 +44,10 @@ FROM Offre
 JOIN Vente ON Offre.IdVente = Vente.IdVente
 WHERE Offre.IdVente = :idVente
 AND Offre.EmailUtilisateur = :emailUtilisateur
-AND Offre.PrixAchat >= Vente.PrixDepart;
+AND Offre.PrixAchat > Vente.PrixDepart;
+
+
+
+
+
 
