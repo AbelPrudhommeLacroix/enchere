@@ -17,8 +17,7 @@ LIMIT 1;
 --(si ça concerne une vente avec une offre max et que l_utilisateur a déjà fait une offre on accepte pas sa nouvelle offre)
 
 SELECT COUNT(*) AS NombreOffres
-FROM Vente
-JOIN Offre ON Offre.IdVente = Vente.IdVente
+FROM Offre
 WHERE Offre.EmailUtilisateur = :emailUtilisateur
 AND Offre.IdVente = :idVente;
 
@@ -36,6 +35,13 @@ AND DateOffre.DateHeureOffre = :dateOffre
 AND Offre.DateHeureOffre <= VenteLimite.DateFin;
 
 
+-- S'il s'agit de la première offre effectuée sur une offre montante
+-- Tester si le prix d'achat est supérieur au prix de départ de la vente
 
-
+SELECT COUNT(*) AS OffreValide
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+WHERE Offre.IdVente = :idVente
+AND Offre.EmailUtilisateur = :emailUtilisateur
+AND Offre.PrixAchat >= Vente.PrixDepart;
 

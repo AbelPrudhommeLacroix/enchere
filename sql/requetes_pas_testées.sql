@@ -121,37 +121,6 @@ LIMIT 1;
 
 
 
-### Faire une offre
-
-## Si le nombre d_offres est limité
-# Compter les offres de quelqu_un pour les ventes à offres limitées (si ça concerne une vente avec une offre max et que l_utilisateur a déjà fait une offre on accepte pas sa nouvelle offre)
-
-SELECT Count(*) AS NombreOffres, Utilisateur.EmailUtilisateur
-FROM Utilisateur, Vente
-WHERE Offre.EmailUtilisateur = Vente.EmailUtilisateur
-AND Offre.EmailUtilisateur = :emailUtilisateur
-AND Vente.NbOffres > 0
-
-
-## Vérifier que l_offre est bien supérieure à la dernière offre effectuée (si montante)
-# Trouver la dernière offre effectuée et le prix d_achat de celle-ci
-SELECT Offre.DateHeureOffre, Offre.PrixAchat
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN DateOffre ON Offre.DateHeureOffre = DateOffre.DateHeureOffre
-ORDER BY DateOffre.DateHeureOffre DESC
-LIMIT 1;
-
-## Vérifier que l_offre a été effectuée avant la date de fin de la vente (si durée limitée)
-
-SELECT COUNT(*) AS OffreValide
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN VenteLimite vl ON Vente.IdVente = vl.IdVente
-WHERE Offre.IdVente = :idVente
-  AND Offre.DateHeureOffre <= vl.DateFin;
-
-
 
 
 ### Mise en place d_une salle de vente
