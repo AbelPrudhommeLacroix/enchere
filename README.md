@@ -82,11 +82,13 @@ _Date de l’offre_ : ( **DateHeureOffre**)
 
 _VenteLimite_ : (...**IdVente**..., DateDebut, DateFin)
 
+_VenteLibre_ : (...**IdVente**...)
+
 _Utilisateur_ : (**EmailUtilisateur**, Nom, Prenom, AdressePostale)
 
 _Caracteristique_ : (**NomCaracteristique**)
 
-_Valeur_Caracteristique_ : (...**IdProduit**..., …**NomCaracteristique**…)
+_Valeur_Caracteristique_ : (...**IdProduit**..., ...**NomCaracteristique**..., Valeur)
 
 ### Légende des Clés : 
 - **id** (Clef primaire)
