@@ -30,13 +30,17 @@ public class Connection {
                 insertStmt.setString(3, prenom);
                 insertStmt.setString(4, adresse);
                 System.out.println("Inscription réussie ! Vous pouvez maintenant vous connecter.");
-            }
+            }String loginSql = "SELECT * FROM users WHERE email = ?";
+
+            try (PreparedStatement loginStmt = conn.prepareStatement(loginSql)) {
+                loginStmt.setString(1, email);
+    
 
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Une erreur est survenue lors de l'inscription.");
         }
-        AuctionApp.main();
+        AuctionApp.accueil();
     }
 
     public static void login(Connection conn, Scanner scanner){
@@ -65,7 +69,8 @@ public class Connection {
             e.printStackTrace();
             System.out.println("Une erreur est survenue lors de la connexion.");
         }
-        AuctionApp.main();
+        AuctionApp.accueil();
+        }
     }
 }
 

@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -114,6 +116,10 @@ public class Auction {
         }
     }
 
+
+    public static void creationVente(){}
+    
+
     public static void creationVente(Connection conn, Scanner scanner, int IdVente, 
         float PrixDepart, String sens, boolean revoc, int NbOffres, int IdSalle, int IdProduit) {
         try{
@@ -167,5 +173,75 @@ public class Auction {
     }
 
 
+    public static void encherir(Connection conn, Scanner scanner) {
+        try {
+            System.out.println("\n=== Détails de votre offre ===");
+            System.out.print("Email : ");
+            String email = scanner.next();
+
+            System.out.print("Idvente : ");
+            String Idvente = scanner.next();
+
+            System.out.print("Date et heure de l'offre : ");
+            String date = scanner.next();
+
+            System.out.print("Prix d'achat : ");
+            String prix = scanner.next();
+
+            System.out.print("Nombre de produit voulu: ");
+            String QuantiteOffre = scanner.next();
+
+            if (verifOffre(email, Idvente, date, prix, QuantiteOffre)){
+                String insertUserSql = "INSERT INTO Offre (Email, Idvente, date, prix, QuantiteOffr) VALUES (?, ?, ?, ?, ?)";
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
+                    insertStmt.setString(1, email);
+                    insertStmt.setString(2, Idvente);
+                    insertStmt.setString(3, date);
+                    insertStmt.setString(4, prix);
+                    insertStmt.setString(5, QuantiteOffre);
+                    System.out.println("Produit ajouté");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Une erreur est survenue lors de l'ajout du produit.");
+        }
+    }
+    
+    public static boolean verifOffre(String email, String Idvente, String date, String prix, String QuantiteOffre){
+        return true;
+    }
+
+    public static void etatVente(Connection conn, Scanner scanner) {
+        try {
+            System.out.println("\n=== Quelle vente vous intéresse? ===");
+
+            System.out.print("Idvente : ");
+            int Idvente = scanner.nextInt();
+
+            String query = "SELECT NbOffres, Revocabilite, Sens FROM Vente WHERE Vente.IdVente = ?";
+            PreparedStatement statement = conn.prepareStatement(query)
+            statement.setInt(1, Idvente);
+    
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            int nbOffres = resultSet.getInt("NbOffres");
+            boolean revocabilite = resultSet.getBoolean("Revocabilite");
+            String sens = resultSet.getString("Sens");
+
+            if (sens == "Montantes", revocabilite == "non révocable",  ){}
+                
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Une erreur est survenue lors de l'ajout du produit.");
+        }
+    }
+    
+
+
     public static void associerSalleVente(Connection conn, Scanner scanner){}
+
 }
