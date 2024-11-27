@@ -30,7 +30,7 @@ public class Auction {
                 int choice = scanner.nextInt();
 
                 switch (choice) {
-                    case 1 -> Auction.vente(conn, scanner);
+                    case 1 -> Auction.ajoutProduit(conn, scanner);
                     case 2 -> Auction.encherir(conn, scanner);
                     case 3 -> Auction.etatVente(conn, scanner);
                     case 4 -> {
@@ -58,34 +58,61 @@ public class Auction {
         }
     }
         
-        
-    public static void menuEnchere(void) {
+    /*
+    Ajout d'un produit à la BDD avec toutes ses caractéristiques
+    */
+    public static void ajoutProduit(void) {
         try {
-            // connexion base de données
-            // System.out.println("Connexion à la base de données réussie.");
+            System.out.println("\n=== Ajout de votre produit ===");
+            System.out.print("Nom : ");
+            String nom = scanner.next();
 
-            Scanner scanner = new Scanner(System.in);
-            boolean exit = false;
+            System.out.print("Prix de revient : ");
+            float prixRevient = scanner.next();
 
-            while (!exit) {
-                System.out.println("\n=== Menu Principal ===");
-                System.out.println("1. Se connecter");
-                System.out.println("2. S'inscrire");
-                System.out.println("3. Quitter");
-                System.out.print("Choix : ");
-                int choice = scanner.nextInt();
+            System.out.print("Stock : ");
+            int stock = scanner.next();
 
-                switch (choice) {
-                    case 1 -> Auction.login(conn, scanner);
-                    case 2 -> Register.register(conn, scanner);
-                    case 3 -> {
-                        System.out.println("Au revoir !");
-                        exit = true;
-                    }
-                    default -> System.out.println("Choix invalide. Veuillez réessayer.");
-                }
+            System.out.print("Catégorie : ");
+            String categorie = scanner.next();
+
+            int idProduit = 0       // générer un idProduit
+
+            String insertUserSql = "INSERT INTO Produit (IdProduit, nom, prixRevient, stock, categorie) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
+                insertStmt.setString(1, idProduit);
+                insertStmt.setString(2, nom);
+                insertStmt.setString(3, prix);
+                insertStmt.setString(4, stock);
+                insertStmt.setString(5, stock);
+                System.out.println("Produit ajouté");
             }
+
+
+        // ajout caractéristiques
+        System.out.print("Avez vous des caractéristiques à préciser : ");
+        System.out.print("1. OUI ");
+        System.out.print("2. NON ");
+        System.out.print("Choix : ");
+        int choice = scanner.nextInt();
+
+        switch (choice) {
+            case 1 -> Auction.ajoutCaracteristiques(idProduit);
+            case 2 -> Auction.vente()       // retour à la page de vente
+            }
+        
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Une erreur est survenue lors de l'inscription.");
         }
+        AuctionApp.main();
     }
+
+
+
+    public static void creationSalle(String categorie) {}
+
+    public static void creationVente(){}
 
 }
