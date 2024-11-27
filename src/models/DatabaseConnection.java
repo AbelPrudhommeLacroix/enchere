@@ -5,30 +5,35 @@ import java.sql.SQLException;
 public class DatabaseConnection {
 
     public static Connection getConnection() {
-        String url = "jdbc:mysql://localhost:3306/votre_base_de_donnees";
-        String username = "votre_nom_utilisateur";
-        String password = "votre_mot_de_passe";
+        // Oracle JDBC connection URL
+        String url = "jdbc:oracle:thin:@oracle1.ensimag.fr:1521:oracle1"; // Replace with your Oracle database URL
+        String username = "zimmermh"; // Replace with your Oracle username
+        String password = "zimmermh"; // Replace with your Oracle password
 
         try {
-            // Charger le driver JDBC (pas nécessaire avec les versions modernes de JDBC)
-            // Class.forName("com.mysql.cj.jdbc.Driver");
+            // Load the Oracle JDBC driver
+            System.out.print("Loading Oracle driver... ");
+            DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+            System.out.println("loaded");
 
-            // Établir la connexion
+            // Establish the connection
+            System.out.print("Connecting to the database... ");
             Connection connection = DriverManager.getConnection(url, username, password);
-            System.out.println("Connexion réussie à la base de données !");
+            System.out.println("connected");
             return connection;
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la connexion à la base de données : " + e.getMessage());
+            System.err.println("Error connecting to the database: " + e.getMessage());
             return null;
         }
     }
+
     public static void closeConnection(Connection conn) {
         if (conn != null) {
             try {
                 conn.close();
-                System.out.println("Connexion à la base de données fermée.");
+                System.out.println("Connection closed.");
             } catch (SQLException e) {
-                System.err.println("Erreur lors de la fermeture de la connexion : " + e.getMessage());
+                System.err.println("Error closing the connection: " + e.getMessage());
             }
         }
     }

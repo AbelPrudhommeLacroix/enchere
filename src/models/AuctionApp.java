@@ -1,62 +1,50 @@
-/* point d'entrée principal de ton application Java
-initialise l'interface utilisateur et configure les 
-scènes pour naviguer entre les différentes fenêtres
-*/
-
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Scanner;
 
 public class AuctionApp {
 
-    public static void accueil(Scanner scan) {
+    public static void accueil() {
         // Connexion à la base de données
         Connection conn = DatabaseConnection.getConnection();
-        try {
-            if (conn != null) {
+        if (conn != null) {
+            Scanner scanner = new Scanner(System.in);
+            boolean exit = false;
 
-                Scanner scanner = new Scanner(System.in);
-                boolean exit = false;
+            while (!exit) {
+                System.out.println("\n=== Main Menu ===");
+                System.out.println("1. Log in");
+                System.out.println("2. Register");
+                System.out.println("3. Exit");
+                System.out.print("Choice: ");
+                int choice = scanner.nextInt();
 
-                while (!exit) {
-                    System.out.println("\n=== Menu Principal ===");
-                    System.out.println("1. Se connecter");
-                    System.out.println("2. S'inscrire");
-                    System.out.println("3. Quitter");
-                    System.out.print("Choix : ");
-                    int choice = scanner.nextInt();
-
-                    switch (choice) {
-                        case 1 -> Connection.login(conn, scanner);
-                        case 2 -> Connection.register(conn, scanner);
-                        case 3 -> {
-                            System.out.println("Au revoir !");
-                            exit = true;
-                        }
-                        default -> System.out.println("Choix invalide. Veuillez réessayer.");
+                switch (choice) {
+                    case 1 -> DBHandler.login(conn, scanner);
+                    case 2 -> DBHandler.register(conn, scanner);
+                    case 3 -> {
+                        System.out.println("Goodbye!");
+                        exit = true;
                     }
+                    default -> System.out.println("Invalid choice. Please try again.");
                 }
             }
             scanner.close();
-            else {
-                System.err.println("Impossible de se connecter à la base de données.");
-            }
-
-        } finally {
-            DatabaseConnection.closeConnection(conn);
+        } else {
+            System.err.println("Unable to connect to the database.");
         }
+        DatabaseConnection.closeConnection(conn);
     }
-        
-        
+
     public static void menuEnchere(Connection conn, Scanner scanner) {
-        System.out.println("\n=== Menu Principal ===");
-        System.out.println("1. Mettre en vente un produit");
-        System.out.println("2. Enchérir");
-        System.out.println("3. Voir l'etat d'une vente");
-        System.out.println("4. Quitter");
-        System.out.print("Choix : ");
-        int choice = scanner.nextInt();
+        boolean exit = false;
+        while (!exit) {
+            System.out.println("\n=== Auction Menu ===");
+            System.out.println("1. List a product");
+            System.out.println("2. Bid");
+            System.out.println("3. View auction status");
+            System.out.println("4. Exit");
+            System.out.print("Choice: ");
+            int choice = scanner.nextInt();
 
         switch (choice) {
             case 1 -> Auction.ajoutProduit(conn, scanner);
@@ -68,9 +56,10 @@ public class AuctionApp {
                 }
             }
         }
-
-        public static void main(String[] args) {
-            System.out.println("Bienvenue dans l'application d'enchères !");
-            accueil();
-        }
     }
+    
+    public static void main(String[] args) {
+        System.out.println("Welcome to the auction application!");
+        accueil();
+    }
+}
