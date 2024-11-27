@@ -23,7 +23,7 @@ public class Connection {
             scanner.nextLine(); // Pour capturer le saut de ligne précédent
             String adresse = scanner.nextLine();
 
-            String insertUserSql = "INSERT INTO users (email, nom, prenom, adresse, password) VALUES (?, ?, ?, ?, ?)";
+            String insertUserSql = "INSERT INTO users (email, nom, prenom, adresse) VALUES (?, ?, ?, ?)";
             try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
                 insertStmt.setString(1, email);
                 insertStmt.setString(2, nom);
@@ -56,7 +56,7 @@ public class Connection {
             if (rs.next()) {
                 // Connexion réussie
                 System.out.println("Connexion réussie. Bienvenue, " + rs.getString("nom") + " " + rs.getString("prenom") + " !");
-                AuctionManager.auctionpage(conn,scanner)
+                AuctionApp.menuEnchere(conn,scanner)
             } else {
                 // Échec de connexion
                 System.out.println("Email incorrect. Veuillez réessayer.");
