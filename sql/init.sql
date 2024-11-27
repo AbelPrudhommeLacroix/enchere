@@ -8,9 +8,9 @@ INSERT INTO Categorie (NomCategorie, Description) VALUES
 
 -- Table Produit
 INSERT INTO Produit (IdProduit, NomProduit, PrixRevient, Stock, NomCategorie) VALUES
-(1, 'Téléphone', 200.00, 50, 'Electronique'),
-(2, 'Table', 50.00, 20, 'Meubles'),
-(3, 'Roman', 10.00, 100, 'Livres');
+(1, 'Téléphone', 200.00, 1, 'Electronique'),
+(2, 'Table', 50.00, 1, 'Meubles'),
+(3, 'Roman', 10.00, 5, 'Livres');
 
 -- Table SalleDeVente
 INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES
