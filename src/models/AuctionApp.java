@@ -4,6 +4,7 @@ import java.util.Scanner;
 public class AuctionApp {
 
     public static void accueil() {
+        // Connexion à la base de données
         Connection conn = DatabaseConnection.getConnection();
         if (conn != null) {
             Scanner scanner = new Scanner(System.in);
@@ -45,19 +46,18 @@ public class AuctionApp {
             System.out.print("Choice: ");
             int choice = scanner.nextInt();
 
-            switch (choice) {
-                case 1 -> Auction.listProduct(conn, scanner);
-                case 2 -> Auction.bid(conn, scanner);
-                case 3 -> Auction.viewAuctionStatus(conn, scanner);
-                case 4 -> {
-                    System.out.println("Goodbye!");
-                    exit = true;
+        switch (choice) {
+            case 1 -> Auction.ajoutProduit(conn, scanner);
+            case 2 -> Auction.encherir(conn, scanner);
+            case 3 -> Auction.etatVente(conn, scanner);
+            case 4 -> {
+                System.out.println("Au revoir !");
+                exit = true;
                 }
-                default -> System.out.println("Invalid choice. Please try again.");
             }
         }
     }
-
+    
     public static void main(String[] args) {
         System.out.println("Welcome to the auction application!");
         accueil();

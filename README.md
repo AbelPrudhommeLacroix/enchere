@@ -46,7 +46,7 @@
 
 ## Schéma entité-association 
 
-![Schéma entité relation](entite_association.png)
+![Schéma entité relation](img/Schema_EA.png)
 
 ### Justification
 
