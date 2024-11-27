@@ -1,58 +1,13 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Scanner;
 
-public class DBQueries {
-
-
-//Execute un fichier .sql ligne par ligne
-public static void executeSQLFile(Connection conn, String filePath) throws SQLException, IOException {
-    Statement stmt = conn.createStatement();
-
-    BufferedReader reader = new BufferedReader(new FileReader(filePath));
-    StringBuilder sqlBuilder = new StringBuilder();
-    String line;
-
-    while ((line = reader.readLine()) != null) {
-        line = line.trim();
-        if (line.isEmpty() || line.startsWith("--")) {
-            continue;
-        }
-        sqlBuilder.append(line);
-
-        if (line.endsWith(";")) { //On execute a chaque point virgule
-            String sql = sqlBuilder.toString();
-            sqlBuilder.setLength(0); 
-            sql = sql.substring(0, sql.length() - 1);
-            stmt.execute(sql);
-        }
-    }
-    reader.close();
-}
-
-    //Renvoi les catégories (ou throw une exception si la requette ne reussie pas)
-    public static String searchCategories(Connection conn, Scanner scanner) throws SQLException {
-
-        String selectCategoriesSql = "SELECT NomCategorie FROM Categorie";
-        
-        String categories = ""; 
-    
-        PreparedStatement stmt = conn.prepareStatement(selectCategoriesSql);
-        ResultSet rs = stmt.executeQuery();
-
-        while(rs.next()) {
-            String nomCategorie = rs.getString("NomCategorie");  
-            categories += "- "+nomCategorie+"\n";  
-        }
-
-        rs.close();
-    
-        return categories;
-    }
-
-
+public class Auction {
 
     // Method to list a product for auction
     public static void ajoutProduit(Connection conn, Scanner scanner) {
@@ -71,7 +26,7 @@ public static void executeSQLFile(Connection conn, String filePath) throws SQLEx
             scanner.nextLine(); // consume newline
             String category = scanner.nextLine();
 
-            //TODO : Produit ID = max(ProduitID) + 1 (avec requette SQL)
+            // Simulate ID generation (in real application use auto-increment)
             int productId = (int) (Math.random() * 10000);
 
             String insertProductSql = "INSERT INTO Products (name, price, stock, category) VALUES (?, ?, ?, ?)";
@@ -95,14 +50,13 @@ public static void executeSQLFile(Connection conn, String filePath) throws SQLEx
         try {
             System.out.println("\n --- Création automatique de la salle de vente ---");
 
-            //TODO : Salle ID = max(SalleID) + 1 (avec requette SQL)
-            int idSalle = 0; 
+            int idSalle = 0; // à générer
 
             String insertUserSql = "INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (?, ?)";
             try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
                 insertStmt.setInt(1, idSalle);
                 insertStmt.setString(2, categorie);
-                System.out.println("Salle de vente " + idSalle + "crée depuis la catégorie " + categorie);
+                System.out.println("Salle de vente" + idSalle + "crée depuis la catégorie " + categorie);
             }
     
         } catch (SQLException e) {
@@ -239,5 +193,3 @@ public static void executeSQLFile(Connection conn, String filePath) throws SQLEx
 }
 
 
-
-   

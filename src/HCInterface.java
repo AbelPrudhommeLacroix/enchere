@@ -1,7 +1,11 @@
-import java.sql.Connection;
 import java.util.Scanner;
+import java.io.IOException;
+import java.sql.*;
 
 public class HCInterface {
+
+
+
 
     public static void menuPrincipal() {
 
@@ -10,6 +14,10 @@ public class HCInterface {
         if (conn != null) {
             Scanner scanner = new Scanner(System.in);
             boolean exit = false;
+
+            //Chargement des tables
+            DatabaseConnection.loadSQL(conn);
+            
 
             while (!exit) {
                 System.out.println("\n=== Menu Principal ===");
@@ -40,18 +48,28 @@ public class HCInterface {
 
 
     public static void menuCreationSalle(Connection conn, Scanner scanner) {
+
         System.out.println("\n=== Création d'une salle ===");
 
-        System.out.println("Affichage des catégories");
-        //TODO : Afficher les catégories
+        //Affichage des catégories
+        try {
+            System.out.println("Liste des catégories disponibles : "); 
+            String categories = DBQueries.searchCategories(conn, scanner);
+            System.out.println(categories);
+        } catch (SQLException e) {
+            System.out.println("[!] Erreur dans l'affichage des categories : " + e); 
+            return;
+        }
+
+        //Choix de la catégorie
         System.out.println("La catégorie de votre salle : ");
-        //TODO : Recuperer la catégorie
-        String categorie = null; 
+        String categorie = scanner.next(); 
+
+        //Creation de la salle
         DBQueries.creationSalle(conn, scanner, categorie);
-        
-        //TODO : Creer type de vente puis les ventes
-        
     }
+
+
     
     public static void main(String[] args) {
         menuPrincipal();

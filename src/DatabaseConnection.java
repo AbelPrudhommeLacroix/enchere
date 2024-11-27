@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
 
 public class DatabaseConnection {
@@ -10,28 +13,39 @@ public class DatabaseConnection {
 
         try {
             // Load the Oracle JDBC driver
-            System.out.print("Loading Oracle driver... ");
+            System.out.println("Chargement des drivers oracle...");
             DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-            System.out.println("loaded");
 
             // Establish the connection
-            System.out.print("Connecting to the database... ");
+            System.out.println("Connection à la BDD...");
             Connection connection = DriverManager.getConnection(url, username, password);
-            System.out.println("connected");
             return connection;
         } catch (SQLException e) {
-            System.err.println("Error connecting to the database: " + e.getMessage());
+            System.err.println("[!] Erreur de connexion à la BDD: " + e.getMessage());
             return null;
         }
     }
+
+   public static void loadSQL(Connection conn) {
+        try {
+            System.out.println("Chargement des tables...");
+            DBQueries.executeSQLFile(conn, "sql/tables.sql");
+            System.out.println("Chargement des données...");
+            DBQueries.executeSQLFile(conn, "sql/init.sql");
+        } catch (SQLException e) {
+            System.err.println("[!] Erreur lors de l'exécution de SQL: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("[!] Erreur lors de la lecture du fichier SQL: " + e.getMessage());
+        }
+   }
 
     public static void closeConnection(Connection conn) {
         if (conn != null) {
             try {
                 conn.close();
-                System.out.println("Connection closed.");
+                System.out.println("Connexion fermé");
             } catch (SQLException e) {
-                System.err.println("Error closing the connection: " + e.getMessage());
+                System.err.println("[!] Erreur en fermant la connexion: " + e.getMessage());
             }
         }
     }
