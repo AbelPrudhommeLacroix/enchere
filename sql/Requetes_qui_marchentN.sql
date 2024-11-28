@@ -10,7 +10,7 @@ JOIN Vente ON Offre.IdVente = Vente.IdVente
 JOIN DateOffre ON Offre.DateHeureOffre = DateOffre.DateHeureOffre
 WHERE Vente.IdVente = :idVente
 ORDER BY DateOffre.DateHeureOffre DESC
-LIMIT 1;
+FETCH FIRST ROW ONLY;
 
 
 -- Si le nombre d_offres est limité
@@ -47,7 +47,148 @@ AND Offre.EmailUtilisateur = :emailUtilisateur
 AND Offre.PrixAchat > Vente.PrixDepart;
 
 
+-- Si la vente est descendante, si une seule offre est présente la vente est fermée
+-- On teste donc s'il y a une offre dans la vente
+
+SELECT COUNT(*) AS VenteFermee
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+WHERE Offre.IdVente = :idVente
+AND Vente.Sens = 'decroissant';
 
 
 
+
+
+### Offres montantes
+
+# Recupérer la dernière offre d_une vente montante à durée libre et non révocable
+
+SELECT Offre.*
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
+WHERE Vente.Sens = 'croissant'
+AND Vente.Revocabilite = 0
+AND Vente.IdVente = :idVente
+ORDER BY Offre.DateHeureOffre DESC
+FETCH FIRST ROW ONLY;
+
+
+# Recupérer le gagnant d_une vente montante à durée fixe et non révocable
+
+SELECT Offre.*
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
+WHERE Vente.Sens = 'croissant'
+AND Vente.Revocabilite = 0
+AND Vente.IdVente = :idVente
+AND VenteLimite.DateFin > Offre.DateHeureOffre
+ORDER BY Offre.DateHeureOffre DESC
+FETCH FIRST ROW ONLY;
+
+
+# Recupérer la dernière offre d_une vente montante à durée libre et révocable
+
+SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
+  CASE 
+    WHEN o.PrixAchat < p.PrixRevient THEN 'Révoquer'
+    ELSE 'Conserver'
+  END AS StatutVente
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN Produit ON Vente.IdProduit = Produit.IdProduit
+JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
+WHERE Vente.Sens = 'croissant'
+AND Vente.Revocabilite = 1
+AND Vente.IdVente = :idVente
+ORDER BY Offre.DateHeureOffre DESC, Offre.PrixAchat DESC
+FETCH FIRST ROW ONLY;
+
+
+# Recupérer le gagnant d_une vente montante à durée fixe et révocable
+
+SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
+  CASE 
+    WHEN Offre.PrixAchat < Produit.PrixRevient THEN 'Révoquer'
+    ELSE 'Conserver'
+  END AS StatutVente
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN Produit ON Vente.IdProduit = Produit.IdProduit
+JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
+WHERE Vente.Sens = 'croissant'
+AND Vente.Revocabilite = 1
+AND Vente.IdVente = :idVente
+AND VenteLimite.DateFin > Offre.DateHeureOffre
+ORDER BY Offre.DateHeureOffre DESC
+FETCH FIRST ROW ONLY;
+
+
+
+### Offres descendantes
+
+# Recupérer la dernière offre d_une vente descendante à durée libre et non révocable
+
+SELECT Offre.*
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
+WHERE Vente.Sens = 'decroissant'
+AND Vente.Revocabilite = 0
+AND Vente.IdVente = :idVente
+ORDER BY Offre.DateHeureOffre ASC
+FETCH FIRST ROW ONLY;
+
+
+# Recupérer le gagnant d_une vente descendante à durée fixe et non révocable
+
+SELECT Offre.*
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
+WHERE Vente.Sens = 'decroissant'
+AND Vente.Revocabilite = 0
+AND Vente.IdVente = :idVente
+AND VenteLimite.DateFin > Offre.DateHeureOffre
+ORDER BY Offre.DateHeureOffre ASC
+FETCH FIRST ROW ONLY;
+
+
+# Recupérer la dernière offre d_une vente descendante à durée libre et révocable
+
+SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
+  CASE 
+    WHEN Offre.PrixAchat < Produit.PrixRevient THEN 'Révoquer'
+    ELSE 'Conserver'
+  END AS StatutVente
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN Produit ON Vente.IdProduit = Produit.IdProduit
+JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
+WHERE Vente.Sens = 'decroissant'
+AND Vente.Revocabilite = 1
+AND Vente.IdVente = :idVente
+ORDER BY Offre.DateHeureOffre ASC, Offre.PrixAchat ASC
+FETCH FIRST ROW ONLY;
+
+
+# Recupérer le gagnant d_une vente descendante à durée fixe et révocable
+
+SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
+  CASE 
+    WHEN Offre.PrixAchat < Produit.PrixRevient THEN 'Révoquer'
+    ELSE 'Conserver'
+  END AS StatutVente
+FROM Offre
+JOIN Vente ON Offre.IdVente = Vente.IdVente
+JOIN Produit ON Vente.IdProduit = Produit.IdProduit
+JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
+WHERE Vente.Sens = 'decroissant'
+AND Vente.Revocabilite = 1
+AND Vente.IdVente = :idVente
+AND VenteLimite.DateFin > Offre.DateHeureOffre
+ORDER BY Offre.DateHeureOffre ASC
+FETCH FIRST ROW ONLY;
 
