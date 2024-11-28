@@ -2,6 +2,10 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
+import java.io.IOException;
+import java.sql.*;
+import java.util.List;
+
 
 public class HCInterface {
 
@@ -46,8 +50,7 @@ public class HCInterface {
 
                 switch (choice) {
                     case 1 -> menuCreationSalle(conn, scanner);
-                    //TODO
-                    case 2 -> menuCreationOffre(conn, scanner);
+                    case 3 -> menuResultatsEnchere(conn, scanner);
                     case 5 -> {
                         System.out.println("Au revoir !");
                         exit = true;
@@ -62,7 +65,52 @@ public class HCInterface {
         DatabaseConnection.closeConnection(conn);
     }
 
+    public static void menuResultatsEnchere(Connection conn, Scanner scanner){
+        System.out.println("\n=== Choisissez l'enchère dont vous voulez les infos ===");
+        
+        try{
+            System.out.print("Liste des Id disponibles : ");
+            String ids = DBQueries.getIds(conn, scanner);
+            System.out.println(ids);
+        } catch (SQLException e){
+            System.err.println("[!] Erreur lors de la récupération des ids : " + e);
+            return;
+        }
+        
+        
+        // L'utilisateur choisit un id
+        int id = -1;
+        while (id == -1) {
+            System.out.print("Choisissez un Id de vente : ");
+            if (scanner.hasNextInt()) {
+                id = scanner.nextInt();
+                try {
+                    if (!DBQueries.doesIdExist(conn, id)) {
+                        System.err.println("[!] L'Id' n'existe pas / n'a pas été trouvée");
+                        id = -1; // Réinitialiser pour redemander
+                    }
+                } catch (Exception e) {
+                    System.err.println("[!] Erreur lors de la vérification de l'Id' : " + e);
+                    id = -1; // Réinitialiser pour redemander
+                }
 
+                // affichage infos enchere
+            
+                try {
+                    List<Offre> infos = DBQueries.getGagnantMontantNonRevocableIllimite(conn, id);
+                    System.out.println(infos);
+                } catch (SQLException e) {
+                    System.err.println("[!] Erreur lors de l'affichage des infos de l'enchère : " + e);
+                }
+
+            } else {
+                System.err.println("[!] Entrée invalide. Veuillez entrer un nombre entier.");
+                scanner.next(); // Consommer l'entrée invalide
+            }
+        }
+
+
+    }
 
     public static void menuCreationSalle(Connection conn, Scanner scanner) {
 
