@@ -2,16 +2,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Scanner;
-//temps
+
 import java.time.LocalDateTime;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 
-import oracle.net.aso.s;
 
 public class DBQueries {
 
@@ -78,7 +76,7 @@ public class DBQueries {
     }
 
 
-    //Renvoi l'id de la salle le plus grand (1 si aucune salle existe)
+    //Renvoi l'id de la salle le plus grand (0 si aucune salle existe)
     public static int getMaxSalleId(Connection conn) throws SQLException {
 
         String getMaxSalleIdSql = "SELECT IdSalle FROM SalleDeVente ORDER BY IdSalle DESC FETCH FIRST 1 ROWS ONLY";
@@ -116,6 +114,7 @@ public class DBQueries {
         }
     }
 
+    //Renvoi l'id de la vente le plus grand (0 si aucune vente n'existe)
     public static int getMaxVenteId(Connection conn) throws SQLException {
 
         String getMaxVenteIdSql = "SELECT IdVente FROM Vente ORDER BY IdVente DESC FETCH FIRST 1 ROWS ONLY";
@@ -150,7 +149,7 @@ public class DBQueries {
         return idSalle;
     }
 
-
+    //Creer un produit
     public static int creationProduit(Connection conn, String nomProduit, float prixRevient, int stock, String nomCategorie) throws SQLException {
 
         String insertProduitSql = "INSERT INTO Produit (IdProduit, NomProduit, PrixRevient, Stock, NomCategorie) VALUES (?, ?, ?, ?, ?)";
@@ -169,7 +168,7 @@ public class DBQueries {
         return idProduit;
     }
 
-    // Fonction qui renvoi l'id de chaque salle de vente et leur categorie
+    //Renvoi l'id de chaque salle de vente et leur categorie
     public static String getSallesDeVente(Connection conn) throws SQLException {
         String selectSalleDeVenteSql = "SELECT IdSalle, NomCategorie FROM SalleDeVente";
         PreparedStatement stmt = conn.prepareStatement(selectSalleDeVenteSql);
@@ -184,7 +183,7 @@ public class DBQueries {
         return salles;
     }
 
-    // Fonction qui affiche toutes les ventes disponibles pour une salle de vente : (idVente, NomProduit, Stock, PrixDepart, Sens, Revocabilite, NbOffres)
+    //Affiche toutes les ventes disponibles pour une salle de vente : (idVente, NomProduit, Stock, PrixDepart, Sens, Revocabilite, NbOffres)
     public static String getVentes(Connection conn, int idSalle) throws SQLException {
         String selectVentesSql = "SELECT IdVente, NomProduit, Stock, PrixDepart, Sens, Revocabilite, NbOffres FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdSalle = ?";
         PreparedStatement stmt = conn.prepareStatement(selectVentesSql);
@@ -207,7 +206,7 @@ public class DBQueries {
         
     }
 
-    // Fonction qui dit si la salle de vente existe
+    //Renvoi true si la salle de vente existe
     public static boolean doesSalleExist(Connection conn, int idSalle) throws SQLException {
         String checkSalleSql = "SELECT 1 FROM SalleDeVente WHERE IdSalle = ?";
         PreparedStatement stmt = conn.prepareStatement(checkSalleSql);
@@ -218,7 +217,7 @@ public class DBQueries {
         return salleExists;
     }
 
-    // Fonction qui dit si une offre est valide ( >= PrixDepart, > Meilleure offre, Quantité <= Stock)
+    //Renvoi true si une offre est valide ( >= PrixDepart, > Meilleure offre, Quantité <= Stock)
     public static boolean isOffreValide(Connection conn, int idVente, float prix, int quantite) throws SQLException {
         String selectProduitSql = "SELECT PrixDepart, Stock FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdVente = ?";
         PreparedStatement stmt = conn.prepareStatement(selectProduitSql);
@@ -244,7 +243,7 @@ public class DBQueries {
         return true;
     }
 
-    // Fonction qui renvoi la meilleure offre
+    //Renvoi la meilleure offre
     public static float getMeilleureOffre(Connection conn, int idVente) throws SQLException {
         String selectMeilleureOffreSql = "SELECT MAX(PrixAchat) FROM Offre WHERE IdVente = ?";
         PreparedStatement stmt = conn.prepareStatement(selectMeilleureOffreSql);
@@ -256,7 +255,7 @@ public class DBQueries {
         return meilleureOffre;
     }
 
-    // Fonction qui dit si la vente existe
+    //Renvoi true si la vente existe
     public static boolean doesVenteExist(Connection conn, int idVente) throws SQLException {
         String checkVenteSql = "SELECT 1 FROM Vente WHERE IdVente = ?";
         PreparedStatement stmt = conn.prepareStatement(checkVenteSql);
@@ -267,9 +266,9 @@ public class DBQueries {
         return venteExists;
     }
 
-    //Fonction pour la création d'une offre. Dont la primary key est DateHeureOffre, Email, IdVente
+    //Creer une offre dont la primary key est DateHeureOffre, Email, IdVente
     public static void creationOffre(Connection conn, float prix, int quantite, int idVente, String email) throws SQLException {
-        System.out.println("Création de l'offre pour " + email + " sur la vente " + idVente + " pour un prix de " + prix + " et une quantité de " + quantite);
+
         // Vérifiez si l'IdVente existe dans la table parente
         String checkVenteSql = "SELECT COUNT(*) FROM Vente WHERE IdVente = ?";
         PreparedStatement checkStmt = conn.prepareStatement(checkVenteSql);
@@ -296,12 +295,14 @@ public class DBQueries {
             insertStmt.setString(4, email);
             insertStmt.setDate(5, date);
             insertStmt.executeUpdate();
+
         } else {
             // L'IdVente n'existe pas, lancez une exception ou gérez l'erreur
             throw new SQLException("La vente n'existe plus.");
         }
     }
 
+    //Throw une exception si l'email n'est pas valide
     public static void isEmailValide(Connection conn, String email) throws SQLException {
         String checkEmailSql = "SELECT 1 FROM Utilisateur WHERE EmailUtilisateur = ?";
         PreparedStatement stmt = conn.prepareStatement(checkEmailSql);
@@ -313,7 +314,7 @@ public class DBQueries {
     }
     
     
-
+    //Creer une vente
     public static int creationVente(Connection conn, float prixDepart, String sens, int revocabilite, int nbOffres, int idSalle, int idProduit) throws SQLException {
 
         String insertVenteSql = "INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -334,7 +335,7 @@ public class DBQueries {
         return idVente;
     }
 
-    
+    //Creer une vente limitée
     public static void creationVenteLimite(Connection conn, int idVente, Timestamp dateDebut, Timestamp dateFin) throws SQLException {
 
         String insertVenteLimiteSql = "INSERT INTO VenteLimite (IdVente, DateDebut, DateFin) VALUES (?, ?, ?)";
@@ -349,10 +350,8 @@ public class DBQueries {
         
     }
 
-
+    //Creer une vente libre
     public static void creationVenteLibre(Connection conn, int idVente) throws SQLException {
-
- 
 
         String insertVenteLibreSql = "INSERT INTO VenteLibre (IdVente) VALUES (?)";
         PreparedStatement insertStmt = conn.prepareStatement(insertVenteLibreSql);
