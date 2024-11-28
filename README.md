@@ -36,7 +36,6 @@
      Produit ↠ Vente <br><br>
      Vente → Salle <br><br>
      Vente → Produit  <br><br>
-     Vente → Salle  <br><br>
     </td>
     <td style=" text-align: left; border:1px solid">
      Une vente à durée libre implique un délai maximal de 10 minutes entre deux offres <br><br>
