@@ -253,11 +253,8 @@ public class HCInterface {
 
     }
 
-
-    
-
     public static void menuCreationOffre(Connection conn, Scanner scanner) {
-        System.out.println("\n=== Création d'une offre ===");
+        System.out.println("\n=========== Création d'une offre ===========\n");
     
         // Affichage de l'id salles de vente et de leur catégorie associée
         try {
