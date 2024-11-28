@@ -60,9 +60,9 @@ AND Vente.Sens = 'decroissant';
 
 
 
-### Offres montantes
+-- Offres montantes
 
-# Recupérer la dernière offre d_une vente montante à durée libre et non révocable
+-- Recupérer la dernière offre d_une vente montante à durée libre et non révocable
 
 SELECT Offre.*
 FROM Offre
@@ -75,7 +75,7 @@ ORDER BY Offre.DateHeureOffre DESC
 FETCH FIRST ROW ONLY;
 
 
-# Recupérer le gagnant d_une vente montante à durée fixe et non révocable
+-- Recupérer le gagnant d_une vente montante à durée fixe et non révocable
 
 SELECT Offre.*
 FROM Offre
@@ -89,7 +89,7 @@ ORDER BY Offre.DateHeureOffre DESC
 FETCH FIRST ROW ONLY;
 
 
-# Recupérer la dernière offre d_une vente montante à durée libre et révocable
+-- Recupérer la dernière offre d_une vente montante à durée libre et révocable
 
 SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
   CASE 
@@ -107,7 +107,7 @@ ORDER BY Offre.DateHeureOffre DESC, Offre.PrixAchat DESC
 FETCH FIRST ROW ONLY;
 
 
-# Recupérer le gagnant d_une vente montante à durée fixe et révocable
+-- Recupérer le gagnant d_une vente montante à durée fixe et révocable
 
 SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
   CASE 
@@ -127,9 +127,9 @@ FETCH FIRST ROW ONLY;
 
 
 
-### Offres descendantes
+-- Offres descendantes
 
-# Recupérer la dernière offre d_une vente descendante à durée libre et non révocable
+-- Recupérer la dernière offre d_une vente descendante à durée libre et non révocable
 
 SELECT Offre.*
 FROM Offre
@@ -142,7 +142,7 @@ ORDER BY Offre.DateHeureOffre ASC
 FETCH FIRST ROW ONLY;
 
 
-# Recupérer le gagnant d_une vente descendante à durée fixe et non révocable
+-- Recupérer le gagnant d_une vente descendante à durée fixe et non révocable
 
 SELECT Offre.*
 FROM Offre
@@ -156,7 +156,7 @@ ORDER BY Offre.DateHeureOffre ASC
 FETCH FIRST ROW ONLY;
 
 
-# Recupérer la dernière offre d_une vente descendante à durée libre et révocable
+-- Recupérer la dernière offre d_une vente descendante à durée libre et révocable
 
 SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
   CASE 
@@ -174,7 +174,7 @@ ORDER BY Offre.DateHeureOffre ASC, Offre.PrixAchat ASC
 FETCH FIRST ROW ONLY;
 
 
-# Recupérer le gagnant d_une vente descendante à durée fixe et révocable
+-- Recupérer le gagnant d_une vente descendante à durée fixe et révocable
 
 SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
   CASE 
