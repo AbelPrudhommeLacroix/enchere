@@ -1,11 +1,16 @@
-import java.util.InputMismatchException;
-import java.util.Scanner;
-import java.io.IOException;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Scanner;
 
 public class HCInterface {
 
-
+    //Convertit un string en Timestamp
+    public static Timestamp convertToTimestamp(String dateStr) throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setLenient(false);
+        return new Timestamp(dateFormat.parse(dateStr).getTime());
+    }
 
 
     public static void menuPrincipal() {
@@ -21,14 +26,14 @@ public class HCInterface {
             
 
             while (!exit) {
-                System.out.println("\n=== Menu Principal ===");
-                System.out.println("1. Creer une salle de Vente");
-                System.out.println("2. Creer une offre");
-                System.out.println("3. Afficher le résultat d'une enchère");
-                System.out.println("4. Afficher une table");
-                System.out.println("5. Quitter");
+                System.out.println("\n=========== Menu Principal ===========\n");
+                System.out.println("1 - Creer une salle de Vente");
+                System.out.println("2 - Creer une offre");
+                System.out.println("3 - Afficher le résultat d'une enchère");
+                System.out.println("4 - Afficher une table");
+                System.out.println("5 - Quitter");
 
-                System.out.print("Votre choix : ");
+                System.out.print("\nVotre choix : ");
 
                 int choice;
                 try {
@@ -59,11 +64,11 @@ public class HCInterface {
 
     public static void menuCreationSalle(Connection conn, Scanner scanner) {
 
-        System.out.println("\n=== Création d'une salle ===");
+        System.out.println("\n=========== Création d'une salle ===========");
 
         //Affichage des catégories
         try {
-            System.out.println("Liste des catégories disponibles : "); 
+            System.out.println("\nListe des catégories disponibles : "); 
             String categories = DBQueries.searchCategories(conn, scanner);
             System.out.println(categories);
         } catch (SQLException e) {
@@ -104,8 +109,9 @@ public class HCInterface {
 
         //Nombre d'offre max
         System.out.print("Nombre d'offres maximum : ");
+        int nb_offre;
         try {
-            int nb_offre = scanner.nextInt();
+            nb_offre = scanner.nextInt();
             if (nb_offre <= 0) throw new Exception();
         } catch (Exception e) {
             System.err.println("[!] Veuillez renseigner un entier strictement positif.");
@@ -122,20 +128,129 @@ public class HCInterface {
         }
 
         //Creation de la salle
+        int id_salle;
         try {
-            DBQueries.creationSalle(conn, scanner, categorie);
+            id_salle = DBQueries.creationSalle(conn, scanner, categorie);
         } catch (Exception e) {
             System.err.println("Erreur lors de la creation de la salle : " + e.getMessage());
+            return;
         }
 
-        //Creation des produits de la salle TODO
-        //TODO : produits ici avec une boucle while en gros dans un autre menu par exemple 1- ajouter un nv produit 2 - terminer
+        //Nombre de ventes
+        System.out.print("Nombre de sous-lots de produits dans votre salle : ");
+        int nb_ss_lots;
+        try {
+            nb_ss_lots = scanner.nextInt();
+            if (nb_ss_lots < 0) throw new Exception();
+        } catch (Exception e) {
+            System.err.println("[!] Veuillez renseigner un entier positif (ou nul).");
+            scanner.nextLine();
+            return;
+        }
+
+        //Insertion des differents produits
+        int ind_ss_lot = 1;
+        while(nb_ss_lots > 0) {
+
+            System.out.println("\n----- Ajout du sous-lot n°"+(ind_ss_lot++)+" -----");
+            
+
+            //Nom de produit
+            System.out.print("Nom de votre produit : ");
+            String nom_produit = scanner.next();
+
+            //Prix de revient
+            System.out.print("Prix de revient de votre produit (ex: 9.50) : ");
+            float prix_revient;
+            try {
+                prix_revient = scanner.nextFloat();
+            } catch (Exception e) {
+                System.out.println("[!] Erreur : Vous devez entrer un nombre valide.");
+                scanner.nextLine();
+                return;
+            }
+
+            //Prix de depart
+            System.out.print("Prix de depart de votre produit (ex: 18.50) : ");
+            float prix_depart;
+            try {
+                prix_depart = scanner.nextFloat();
+            } catch (Exception e) {
+                System.out.println("[!] Erreur : Vous devez entrer un nombre valide.");
+                scanner.nextLine();
+                return;
+            }
+
+            //Prix de revient
+            System.out.print("Nombre de produits dans votre sous-lots : ");
+            int stock;
+            try {
+                stock = scanner.nextInt();
+                if (stock <= 0) throw new Exception();
+            } catch (Exception e) {
+                System.err.println("[!] Veuillez renseigner un entier strictement positif.");
+                scanner.nextLine();
+                return;
+            }
+
+            //Creation du produit
+            int id_produit;
+            try {
+                id_produit = DBQueries.creationProduit(conn, nom_produit, prix_revient, stock, categorie);
+            } catch (Exception e) {
+                System.err.println("[!] Erreur à la création du produit.");
+                return;
+            }
+
+            //Creation de la vente
+            int id_vente;
+            try {
+                id_vente = DBQueries.creationVente(conn, prix_depart, sens,revocabilite, nb_offre, id_salle, id_produit);
+            } catch (Exception e) {
+                System.err.println("[!] Erreur à la création de la vente.");
+                return;
+            }
+
+
+            //Initialisation des ventes limitée
+            if (duree_vente.equals("limite")) {
+                System.out.print("Date de debut de la vente (format: yyyy-MM-dd HH:mm:ss) : ");
+                scanner.nextLine(); //skip le saut de ligne precedent
+                String date_debut_str = scanner.nextLine();
+                System.out.print("Date de fin de la vente : ");
+                String date_fin_str = scanner.nextLine();
+
+                Timestamp date_debut, date_fin;
+                try {
+                    date_debut = convertToTimestamp(date_debut_str);
+                    date_fin = convertToTimestamp(date_fin_str);
+                } catch (Exception e) {
+                    System.err.println("[!] Erreur, format de date incorrect : "+e.getMessage());
+                    return;
+                }
+
+                try {
+                    DBQueries.creationVenteLimite(conn, id_vente, date_debut, date_fin);
+                } catch (Exception e) {
+                    System.err.println("[!] Erreur à la création de la vente limitée "+e.getMessage());
+                    return;
+                }
+            } else {
+                try {
+                    DBQueries.creationVenteLibre(conn, id_vente);
+                } catch (Exception e) {
+                    System.err.println("[!] Erreur à la création de la vente libre "+e.getMessage());
+                    return;
+                }
+            }
+
+            nb_ss_lots--;
+        }
+
+        System.out.println("\n[☺] Salle de vente crée !");
+
     }
 
-
-
-
-    
     public static void main(String[] args) {
         menuPrincipal();
     }

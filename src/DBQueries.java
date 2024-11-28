@@ -84,13 +84,50 @@ public class DBQueries {
             return maxSalleId; 
         } else {
             rs.close();
-            return 1;
+            return 0;
+        }
+    }
+
+    //Renvoi l'id du produit le plus grand (0 si aucun produit existe)
+    public static int getMaxProduitId(Connection conn) throws SQLException {
+        
+        String getMaxProduitIdSql = "SELECT IdProduit FROM Produit ORDER BY IdProduit DESC FETCH FIRST 1 ROWS ONLY";
+        PreparedStatement stmt = conn.prepareStatement(getMaxProduitIdSql);
+    
+        // Exécuter la requête
+        ResultSet rs = stmt.executeQuery();
+    
+        if (rs.next()) {
+            int maxProduitId = rs.getInt("IdProduit");
+            rs.close();
+            return maxProduitId; 
+        } else {
+            rs.close();
+            return 0;
+        }
+    }
+
+    public static int getMaxVenteId(Connection conn) throws SQLException {
+
+        String getMaxVenteIdSql = "SELECT IdVente FROM Vente ORDER BY IdVente DESC FETCH FIRST 1 ROWS ONLY";
+        PreparedStatement stmt = conn.prepareStatement(getMaxVenteIdSql);
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            // Récupérer le plus grand IdVente
+            int maxVenteId = rs.getInt("IdVente");
+            rs.close();
+            return maxVenteId;
+        } else {
+            rs.close();
+            return 0;
         }
     }
 
 
     //Creer une salle avec la categorie categorie
-    public static void creationSalle(Connection conn, Scanner scanner, String categorie) throws SQLException {
+    public static int creationSalle(Connection conn, Scanner scanner, String categorie) throws SQLException {
 
         int idSalle = getMaxSalleId(conn) + 1; // Id unique
 
@@ -98,195 +135,81 @@ public class DBQueries {
         PreparedStatement insertStmt = conn.prepareStatement(insertUserSql);
         insertStmt.setInt(1, idSalle);
         insertStmt.setString(2, categorie);
+
         insertStmt.executeQuery();
+
+        return idSalle;
     }
 
 
+    public static int creationProduit(Connection conn, String nomProduit, float prixRevient, int stock, String nomCategorie) throws SQLException {
 
+        String insertProduitSql = "INSERT INTO Produit (IdProduit, NomProduit, PrixRevient, Stock, NomCategorie) VALUES (?, ?, ?, ?, ?)";
 
+        int idProduit = getMaxProduitId(conn) + 1;
 
+        PreparedStatement insertStmt = conn.prepareStatement(insertProduitSql);
+        insertStmt.setInt(1, idProduit);
+        insertStmt.setString(2, nomProduit);
+        insertStmt.setFloat(3, prixRevient);
+        insertStmt.setInt(4, stock);
+        insertStmt.setString(5, nomCategorie);
 
+        insertStmt.executeQuery();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //ANCIEN TRUC EN BAS
-
-
-    // Method to list a product for auction
-    public static void ajoutProduit(Connection conn, Scanner scanner) {
-        try {
-            System.out.println("\n=== Add your product ===");
-            System.out.print("Name: ");
-            String name = scanner.next();
-
-            System.out.print("Price: ");
-            float price = scanner.nextFloat();
-
-            System.out.print("Stock: ");
-            int stock = scanner.nextInt();
-
-            System.out.print("Category: ");
-            scanner.nextLine(); // consume newline
-            String category = scanner.nextLine();
-
-            //TODO : Produit ID = max(ProduitID) + 1 (avec requette SQL)
-            int productId = (int) (Math.random() * 10000);
-
-            String insertProductSql = "INSERT INTO Products (name, price, stock, category) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(insertProductSql)) {
-                stmt.setString(1, name);
-                stmt.setFloat(2, price);
-                stmt.setInt(3, stock);
-                stmt.setString(4, category);
-                stmt.executeUpdate();
-                System.out.println("Product added!");
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error adding product: " + e.getMessage());
-        }
-    }
-
-
-
-
-
-    
-    
-
-    public static void creationVente(Connection conn, Scanner scanner, int IdVente, 
-        float PrixDepart, String sens, boolean revoc, int NbOffres, int IdSalle, int IdProduit) {
-        try{
-            System.out.println("\n --- Création automatique de la vente ---");
-            String inserctUserSql = "INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocable, NbOffres, IdSalle, IdProduit) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement insertStmt = conn.prepareStatement(inserctUserSql)){
-                insertStmt.setInt(1, IdVente);
-                insertStmt.setFloat(2, PrixDepart);
-                insertStmt.setString(3, sens);
-                insertStmt.setBoolean(4, revoc);
-                insertStmt.setInt(5, NbOffres);
-                insertStmt.setInt(6, IdSalle);
-                insertStmt.setInt(7, IdProduit);}
-
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Une erreur est survenue lors de la création de la vente.");
-        }
-    }
-
-    public static void ajoutCaracteristique(Connection conn, Scanner scanner, int IdProduit){
-        try {
-            System.out.println("\n=== Ajout caracteristique ===");
-            System.out.print("Nom caractéristique : ");
-            String nomCaract = scanner.next();
-
-            System.out.print("Valeur : ");
-            String valCaract = scanner.next();
-
-
-            String insertUserSql0 = "INSERT INTO Caracteristique (NomCaracteristique) VALUES (?)";
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql0)){
-                insertStmt.setString(1, nomCaract);
-                System.out.println("Caracteristique ajoutée");
-            }
-
-            String insertUserSql1 = "INSERT INTO ValeurCaracteristique (IdProduit, NomCaracteristique, Valeur) VALUES (?, ?, ?)";
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql1)){
-                insertStmt.setInt(1, IdProduit);
-                insertStmt.setString(2, nomCaract);
-                insertStmt.setString(3, valCaract);
-                System.out.println("Valeur caracteristique ajoutée");
-            }
+        return idProduit;
         
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Une erreur est survenue lors de l'ajout de la caractériqtique du produit.");
-        }
     }
 
 
-    public static void encherir(Connection conn, Scanner scanner) {
-        try {
-            System.out.println("\n=== Détails de votre offre ===");
-            System.out.print("Email : ");
-            String email = scanner.next();
+    public static int creationVente(Connection conn, float prixDepart, String sens, int revocabilite, int nbOffres, int idSalle, int idProduit) throws SQLException {
 
-            System.out.print("Idvente : ");
-            String Idvente = scanner.next();
+        String insertVenteSql = "INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-            System.out.print("Date et heure de l'offre : ");
-            String date = scanner.next();
+        int idVente = getMaxVenteId(conn) + 1;
 
-            System.out.print("Prix d'achat : ");
-            String prix = scanner.next();
+        PreparedStatement insertStmt = conn.prepareStatement(insertVenteSql);
+        insertStmt.setInt(1, idVente);
+        insertStmt.setFloat(2, prixDepart);
+        insertStmt.setString(3, sens);
+        insertStmt.setInt(4, revocabilite);
+        insertStmt.setInt(5, nbOffres);
+        insertStmt.setInt(6, idSalle);
+        insertStmt.setInt(7, idProduit);
 
-            System.out.print("Nombre de produit voulu: ");
-            String QuantiteOffre = scanner.next();
+        insertStmt.executeUpdate();
 
-            if (verifOffre(email, Idvente, date, prix, QuantiteOffre)){
-                String insertUserSql = "INSERT INTO Offre (Email, Idvente, date, prix, QuantiteOffr) VALUES (?, ?, ?, ?, ?)";
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertUserSql)){
-                    insertStmt.setString(1, email);
-                    insertStmt.setString(2, Idvente);
-                    insertStmt.setString(3, date);
-                    insertStmt.setString(4, prix);
-                    insertStmt.setString(5, QuantiteOffre);
-                    System.out.println("Produit ajouté");
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Une erreur est survenue lors de l'ajout du produit.");
-        }
+        return idVente;
     }
+
     
-    public static boolean verifOffre(String email, String Idvente, String date, String prix, String QuantiteOffre){
-        return true;
+    public static void creationVenteLimite(Connection conn, int idVente, Timestamp dateDebut, Timestamp dateFin) throws SQLException {
+
+        String insertVenteLimiteSql = "INSERT INTO VenteLimite (IdVente, DateDebut, DateFin) VALUES (?, ?, ?)";
+
+        PreparedStatement insertStmt = conn.prepareStatement(insertVenteLimiteSql);
+
+        insertStmt.setInt(1, idVente);
+        insertStmt.setTimestamp(2, dateDebut);
+        insertStmt.setTimestamp(3, dateFin);
+
+        insertStmt.executeUpdate();
+        
     }
 
-    public static void etatVente(Connection conn, Scanner scanner) {
-        try {
-            System.out.println("\n=== Quelle vente vous intéresse? ===");
 
-            System.out.print("Idvente : ");
-            int Idvente = scanner.nextInt();
+    public static void creationVenteLibre(Connection conn, int idVente) throws SQLException {
 
-            String query = "SELECT NbOffres, Revocabilite, Sens FROM Vente WHERE Vente.IdVente = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setInt(1, Idvente);
-    
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            int nbOffres = resultSet.getInt("NbOffres");
-            boolean revocabilite = resultSet.getBoolean("Revocabilite");
-            String sens = resultSet.getString("Sens");
+ 
 
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Une erreur est survenue lors de l'ajout du produit.");
-        }
+        String insertVenteLibreSql = "INSERT INTO VenteLibre (IdVente) VALUES (?)";
+        PreparedStatement insertStmt = conn.prepareStatement(insertVenteLibreSql);
+        insertStmt.setInt(1, idVente);
+        insertStmt.executeUpdate();
+     
     }
     
 
-
-    public static void associerSalleVente(Connection conn, Scanner scanner){}
 
 }
 
