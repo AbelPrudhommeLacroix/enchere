@@ -28,15 +28,15 @@
      Fin > Debut
     </td>
     <td style=" text-align: left; border:1px solid">
-     Un email peut avoir plusieurs offres ↠ <br><br>
-     Un produit peut avoir plusieurs caractéristiques ↠ <br><br>
-     Une vente peut avoir plusieurs offres ↠ <br><br>
-     Une salle peut contenir plusieurs produits ↠ <br><br>
-     Une catégorie peut avoir plusieurs produits ↠ <br><br>
-     Un produit peut être dans plusieurs ventes ↠ <br><br>
-     Une vente n'a lieu que dans une seule salle <br><br>
-     Une vente ne concerne qu'un seul produit  <br><br>
-     Une vente n'a lieu que dans une seule salle  <br><br>
+     Email ↠ Offre <br><br>
+     Produit ↠ caractéristique <br><br>
+     Vente ↠ Offres <br><br>
+     Salle ↠ Produit <br><br>
+     Catégorie ↠ Produit  <br><br>
+     Produit ↠ Vente <br><br>
+     Vente → Salle <br><br>
+     Vente → Produit  <br><br>
+     Vente → Salle  <br><br>
     </td>
     <td style=" text-align: left; border:1px solid">
      Une vente à durée libre implique un délai maximal de 10 minutes entre deux offres <br><br>
