@@ -40,3 +40,7 @@ AND V.Revocabilite != Vs.Revocabilite
 AND V.NbOffres != Vs.NbOffres;
 
 
+--- GAGNANTS 
+--- durée fixe et non révocable 
+
+

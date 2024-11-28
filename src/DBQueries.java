@@ -2,7 +2,16 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+//temps
+import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
+import oracle.net.aso.s;
 
 public class DBQueries {
 
@@ -102,18 +111,70 @@ public class DBQueries {
     }
 
 
+    public static String getIds(Connection conn, Scanner scanner) throws SQLException {
+
+        String selectIdsSql = "SELECT IdVente FROM Vente";
+        PreparedStatement stmt = conn.prepareStatement(selectIdsSql);
+        ResultSet rs = stmt.executeQuery();
+
+        String ids = ""; 
+
+        while(rs.next()) {
+            int idV = rs.getInt("IdVente");  
+            ids += idV + " | ";  
+        }
+
+        rs.close();
+    
+        return ids;
+    }
+
+    public static boolean doesIdExist(Connection conn, int id) throws SQLException {
+
+        String checkIdSql = "SELECT 1 FROM SalleDeVente WHERE IdSalle = ?";
+        PreparedStatement stmt = conn.prepareStatement(checkIdSql);
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+    
+        boolean idExists = rs.next();
+        rs.close();
+
+        return idExists;
+    }
 
 
+    /* vente montante illimitée non révocable */
+    public static List<Offre> getGagnantMontantNonRevocableIllimite(Connection conn, int IdVente) throws SQLException{
+        // String selectUserSql = "SELECT Offre.DateHeureOffre" + 
+        //                 "FROM Offre\n" + 
+        //                 "JOIN Vente ON Offre.IdVente = Vente.IdVente\n" + 
+        //                 "JOIN DateOffre ON Offre.DateHeureOffre = DateOffre.DateHeureOffre\n" + 
+        //                 "WHERE Vente.IdVente = ?\n" + 
+        //                 "ORDER BY DateOffre.DateHeureOffre DESC\n" + 
+        //                 "FETCH FIRST ROW ONLY;";
+        // PreparedStatement stmt = conn.prepareStatement(selectUserSql);
+        // stmt.setInt(1, IdVente);
+        // ResultSet lastTimeRs = stmt.executeQuery();
 
+        // Timestamp lastTime = null;
+        // if (lastTimeRs.next()) {
+        //     lastTime = lastTimeRs.getTimestamp("DateHeureOffre");
+        // }
 
+        // // temps actuel
+        // LocalDateTime currentTime = LocalDateTime.now();
 
+        // Duration duration = Duration.between(lastTime.toLocalDateTime(), currentTime);
 
-
-
-
-
-
-
+        // Vérifier si la durée est supérieure à 10 minutes
+        if (true) {
+            System.out.println("La différence est supérieure à 10 minutes.");
+            return Offre.sacADos(conn, IdVente);
+        } else {
+            System.out.println("La différence est inférieure ou égale à 10 minutes.");
+            return null;
+        }
+    }
 
 
 
