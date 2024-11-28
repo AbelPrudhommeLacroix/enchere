@@ -62,6 +62,8 @@ public class HCInterface {
         DatabaseConnection.closeConnection(conn);
     }
 
+
+
     public static void menuCreationSalle(Connection conn, Scanner scanner) {
 
         System.out.println("\n=========== Création d'une salle ===========");
@@ -133,6 +135,7 @@ public class HCInterface {
             id_salle = DBQueries.creationSalle(conn, scanner, categorie);
         } catch (Exception e) {
             System.err.println("Erreur lors de la creation de la salle : " + e.getMessage());
+            return;
         }
 
         //Nombre de ventes
@@ -250,7 +253,9 @@ public class HCInterface {
 
     }
 
+
     
+
     public static void menuCreationOffre(Connection conn, Scanner scanner) {
         System.out.println("\n=== Création d'une offre ===");
     
