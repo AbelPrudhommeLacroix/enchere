@@ -444,6 +444,25 @@ AND VenteLimite.DateFin > Offre.DateHeureOffre
 ORDER BY Offre.DateHeureOffre ASC
 FETCH FIRST ROW ONLY;
 ```
+## Bilan 
+
+### Points Difficiles Rencontrés
+
+- Compréhension du Sujet : La compréhension du sujet a été un des principaux défis, car il a fallu clarifier certaines attentes avant de pouvoir avancer efficacement.
+
+- Choix de Conception : Le choix des bonnes solutions de conception a été complexe, notamment pour définir les relations entre les différentes entités et s'assurer qu'elles respectent les contraintes d'intégrité et de normalisation. 
+
+- Accès Concurrent pour l'Interface Homme-Machine : Gérer les accès concurrents dans l'interface homme-machine a été un autre point difficile. Il a fallu s'assurer que plusieurs utilisateurs pouvaient interagir avec le système sans conflit, en particulier lors de la gestion des ventes et des offres.
+
+### Organisation du Travail
+
+- Conception, schema relationel : Nous avons tous travaillé ensemble sur cette partie au début du projet.
+
+- Interface Homme-Machine: Abel et Nour ont été impliqués dès le début du projet. Par la suite, Mateo et Hélain ont rejoint cette tâche une fois que les autres parties étaient terminées, tandis qu'Abel est allé se concentrer sur le compte rendu.
+
+- Requêtes SQL: Nathan a pris en charge cette tâche dès le début, en se concentrant sur la création des requêtes nécessaires au projet.
+
+- Implémentation des Tables et Données de Base: Mateo et Hélain ont travaillé sur la mise en place des tables et l'intégration des données de base.
 
 
 
