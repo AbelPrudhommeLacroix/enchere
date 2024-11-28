@@ -389,11 +389,11 @@ public class DBQueries {
     
         boolean idExists = rs.next();
         rs.close();
-    
         return idExists;
     }
     
-    
+
+
     /* vente montante illimitée non révocable */
     public static List<Offre> getGagnantMontantNonRevocableIllimite(Connection conn, int IdVente) throws SQLException{
         String selectUserSql = "SELECT Offre.DateHeureOffre" + 
@@ -405,21 +405,23 @@ public class DBQueries {
                         "FETCH FIRST ROW ONLY;";
         PreparedStatement stmt = conn.prepareStatement(selectUserSql);
         stmt.setInt(1, IdVente);
-        ResultSet lastTimeRs = stmt.executeQuery();
-    
+        // ca bloque ici
+        ResultSet rs = stmt.executeQuery();
+
+
         Timestamp lastTime = null;
-        if (lastTimeRs.next()) {
-            lastTime = lastTimeRs.getTimestamp("DateHeureOffre");
+        if (rs.next()) {
+            lastTime = rs.getTimestamp("DateHeureOffre");
         }
-    
+
         // temps actuel
         LocalDateTime currentTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formattedTime = currentTime.format(formatter);
-    
-    
+
+
         Duration duration = Duration.between(lastTime.toLocalDateTime(), currentTime);
-    
+
         // Vérifier si la durée est supérieure à 10 minutes
         if (duration.toMinutes() > 10) {
             System.out.println("La différence est supérieure à 10 minutes.");
@@ -429,7 +431,6 @@ public class DBQueries {
             return null;
         }
     }
-
 
 }
 

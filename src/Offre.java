@@ -16,7 +16,7 @@ public class Offre {
 
     public static List<Offre> getOffre(Connection conn, int IdVente) {
         List<Offre> offres = new ArrayList<>();
-        
+        System.out.println("coucou2");
         String selectUserSql = "SELECT PrixAchat, QuantiteOffre, EmailUtilisateur FROM Offre WHERE IdVente = ?";
         System.out.println("coucou1");
         try (PreparedStatement stmt = conn.prepareStatement(selectUserSql)) {
@@ -47,7 +47,6 @@ public class Offre {
         String getStockSql = "SELECT p.Stock FROM Produit p " + 
                           "JOIN Vente v ON p.IdProduit = v.IdProduit " + 
                           "WHERE v.IdVente = ?";
-        
         PreparedStatement stmt = conn.prepareStatement(getStockSql);
         stmt.setInt(1, IdVente);
     
@@ -76,6 +75,7 @@ public class Offre {
         
 
         // Récupérer le stock disponible
+        System.out.println("coucou4");
         int stockDisponible = getStock(conn, IdVente);
 
         // Algo du sac à dos (BackPack)
