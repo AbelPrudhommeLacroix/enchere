@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import java.time.LocalDateTime;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 
@@ -173,18 +174,18 @@ public class DBQueries {
         String selectSalleDeVenteSql = "SELECT IdSalle, NomCategorie FROM SalleDeVente";
         PreparedStatement stmt = conn.prepareStatement(selectSalleDeVenteSql);
         ResultSet rs = stmt.executeQuery();
-        String salles = "";
-        while(rs.next()) {
+        StringBuilder salles = new StringBuilder();
+        while (rs.next()) {
             int idSalle = rs.getInt("IdSalle");
             String nomCategorie = rs.getString("NomCategorie");
-            salles += "- IdSalle : "+idSalle+" | NomCategorie : "+nomCategorie+"\n";
+            salles.append(idSalle).append(" - ").append(nomCategorie).append("\n");
         }
         rs.close();
-        return salles;
+        return salles.toString();
     }
 
     //Affiche toutes les ventes disponibles pour une salle de vente : (idVente, NomProduit, Stock, PrixDepart, Sens, Revocabilite, NbOffres)
-    public static String getVentes(Connection conn, int idSalle) throws SQLException {
+    public static String getVentes(Connection conn, int idSalle, boolean showBest) throws SQLException {
         String selectVentesSql = "SELECT IdVente, NomProduit, Stock, PrixDepart, Sens, Revocabilite, NbOffres FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdSalle = ?";
         PreparedStatement stmt = conn.prepareStatement(selectVentesSql);
         stmt.setInt(1, idSalle);
@@ -198,8 +199,13 @@ public class DBQueries {
             String sens = rs.getString("Sens");
             boolean revocabilite = rs.getBoolean("Revocabilite");
             int nbOffres = rs.getInt("NbOffres");
-            float meilleureOffre = getMeilleureOffre(conn, idVente);
-            ventes += "- IdVente : "+idVente+" | NomProduit : "+nomProduit+" | Stock : "+stock+" | PrixDepart : "+prixDepart+" | Meilleure Offre : "+meilleureOffre+" | Sens : "+sens+" | Revocabilite : "+revocabilite+" | NbOffres : "+nbOffres+"\n";
+            
+            if (showBest) {
+                float meilleureOffre = getMeilleureOffre(conn, idVente);
+                ventes += idVente+" - "+nomProduit+" (Stock : "+stock+", Prix de départ : "+prixDepart+"€, Meilleure Offre : "+meilleureOffre+"€, Sens : "+sens+",  Revocabilite : "+revocabilite+", Nombre d'offres : "+nbOffres+")\n";
+            } else {
+                ventes += idVente+" - "+nomProduit+" (Stock : "+stock+", Prix de départ : "+prixDepart+"€, Sens : "+sens+",  Revocabilite : "+revocabilite+", Nombre d'offres : "+nbOffres+")\n";
+            }
         }
         rs.close();
         return ventes;
@@ -277,6 +283,18 @@ public class DBQueries {
         if (rs.next() && rs.getInt(1) > 0) {
             // L'IdVente existe, procédez à l'insertion de l'offre
             Date date = new Date(System.currentTimeMillis());
+            Timestamp currentTimestamp = Timestamp.from(Instant.now());
+
+            if (isVenteLimitee(conn, idVente)) {
+                Timestamp date_debut = getDateDebutVenteLimitee(conn, idVente);
+                Timestamp date_fin = getDateFinVenteLimitee(conn, idVente);
+               
+            }
+            //TODO : verifier que date_debut < date < date_fin si limite  
+            //TODO : ou que derniere_offre_date + 10 min > date si libre  sinon refuser
+            // (Faire à la fin sinon trop chiant)
+
+            //TODO : refuser l'offre si le montant < au gagnant actuel
     
             try {
                 String insertDateSql = "INSERT INTO DateOffre (DateHeureOffre) VALUES (?)";
@@ -360,77 +378,72 @@ public class DBQueries {
      
     }
 
-    // NOUR
-    public static String getIds(Connection conn, Scanner scanner) throws SQLException {
+    //Renvoi true si une vente est limitée
+    public static boolean isVenteLimitee(Connection conn, int idVente) throws SQLException {
 
-        String selectIdsSql = "SELECT IdVente FROM Vente";
-        PreparedStatement stmt = conn.prepareStatement(selectIdsSql);
-        ResultSet rs = stmt.executeQuery();
-
-        String ids = ""; 
-
-        while(rs.next()) {
-            int idV = rs.getInt("IdVente");  
-            ids += idV + " | ";  
-        }
-
-        rs.close();
-    
-        return ids;
-    }
-
-    public static boolean doesIdExist(Connection conn, int id) throws SQLException {
-
-        String checkIdSql = "SELECT 1 FROM SalleDeVente WHERE IdSalle = ?";
-        PreparedStatement stmt = conn.prepareStatement(checkIdSql);
-        stmt.setInt(1, id);
+        String checkVenteLimiteeSql = 
+            "SELECT CASE " +
+            "           WHEN vlim.IdVente IS NOT NULL THEN true " +
+            "           ELSE false " +
+            "       END AS isLimitee " +
+            "FROM Vente v " +
+            "LEFT JOIN VenteLimite vlim ON v.IdVente = vlim.IdVente " +
+            "WHERE v.IdVente = ?";
+        
+        PreparedStatement stmt = conn.prepareStatement(checkVenteLimiteeSql);
+        stmt.setInt(1, idVente); 
         ResultSet rs = stmt.executeQuery();
     
-        boolean idExists = rs.next();
-        rs.close();
-        return idExists;
-    }
-    
-
-
-    /* vente montante illimitée non révocable */
-    public static List<Offre> getGagnantMontantNonRevocableIllimite(Connection conn, int IdVente) throws SQLException{
-        String selectUserSql = "SELECT Offre.DateHeureOffre" + 
-                        "FROM Offre\n" + 
-                        "JOIN Vente ON Offre.IdVente = Vente.IdVente\n" + 
-                        "JOIN DateOffre ON Offre.DateHeureOffre = DateOffre.DateHeureOffre\n" + 
-                        "WHERE Vente.IdVente = ?\n" + 
-                        "ORDER BY DateOffre.DateHeureOffre DESC\n" + 
-                        "FETCH FIRST ROW ONLY;";
-        PreparedStatement stmt = conn.prepareStatement(selectUserSql);
-        stmt.setInt(1, IdVente);
-        // ca bloque ici
-        ResultSet rs = stmt.executeQuery();
-
-
-        Timestamp lastTime = null;
         if (rs.next()) {
-            lastTime = rs.getTimestamp("DateHeureOffre");
-        }
-
-        // temps actuel
-        LocalDateTime currentTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedTime = currentTime.format(formatter);
-
-
-        Duration duration = Duration.between(lastTime.toLocalDateTime(), currentTime);
-
-        // Vérifier si la durée est supérieure à 10 minutes
-        if (duration.toMinutes() > 10) {
-            System.out.println("La différence est supérieure à 10 minutes.");
-            return Offre.sacADos(conn, IdVente);
+            boolean isLimitee = rs.getBoolean("isLimitee");
+            rs.close();
+            stmt.close();
+            return isLimitee; 
         } else {
-            System.out.println("La différence est inférieure ou égale à 10 minutes.");
-            return null;
+            rs.close();
+            stmt.close();
+            return false; 
         }
     }
 
+    //Récupérer la date de début
+    public static Timestamp getDateDebutVenteLimitee(Connection conn, int idVente) throws SQLException {
+        // Requête SQL pour récupérer la date de début
+        String getDateDebutSql = "SELECT DateDebut " + "FROM VenteLimite " + "WHERE IdVente = ?";
+
+        PreparedStatement stmt = conn.prepareStatement(getDateDebutSql);
+        stmt.setInt(1, idVente);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            Timestamp dateDebut = rs.getTimestamp("DateDebut");
+            rs.close();
+            stmt.close();
+            return dateDebut; 
+        } 
+        throw new SQLException("Aucune date de début");
+    }
+
+
+    //Récupérer la date de fin
+    public static Timestamp getDateFinVenteLimitee(Connection conn, int idVente) throws SQLException {
+        String getDateFinSql = "SELECT DateFin " + "FROM VenteLimite " + "WHERE IdVente = ?";
+
+        PreparedStatement stmt = conn.prepareStatement(getDateFinSql);
+        stmt.setInt(1, idVente);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+
+            Timestamp dateFin = rs.getTimestamp("DateFin");
+            rs.close();
+            stmt.close();
+            return dateFin; 
+
+        } 
+        throw new SQLException("Aucune date de fin.");
+    }
+    
 }
 
 

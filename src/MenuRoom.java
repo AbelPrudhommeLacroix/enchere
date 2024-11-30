@@ -9,7 +9,7 @@ public class MenuRoom {
 
         //Affichage des catégories
         try {
-            System.out.println("\nListe des catégories disponibles : "); 
+            System.out.println("\n------ Liste des catégories disponibles ------"); 
             String categories = DBQueries.searchCategories(conn, scanner);
             System.out.println(categories);
         } catch (SQLException e) {
@@ -198,6 +198,7 @@ public class MenuRoom {
                         date_debut = HCInterface.convertToTimestamp(date_debut_str);
                         date_fin = HCInterface.convertToTimestamp(date_fin_str);
                         //TODO : Verifier si date_fin > date_debut
+                        //TODO : Verifier que date_debut >= date actuelle
                     } catch (Exception e) {
                         System.err.println("[!] Erreur, format de date incorrect : "+e.getMessage());
                         date_debut_str = "";

@@ -9,7 +9,7 @@ public class MenuOffer {
     
         // Affichage de l'id salles de vente et de leur catégorie associée
         try {
-            System.out.println("Liste des salles de vente disponibles : ");
+            System.out.println("------ Liste des salles de vente disponibles ------");
             String salles = DBQueries.getSallesDeVente(conn);
             System.out.println(salles);
         } catch (SQLException e) {
@@ -20,7 +20,7 @@ public class MenuOffer {
         // L'utilisateur choisit une salle de vente
         int id_salle = -1;
         while (id_salle == -1) {
-            System.out.print("Choisissez l'id de la salle de vente (ex : 1): ");
+            System.out.print("Choisissez l'id de la salle de vente : ");
             if (scanner.hasNextInt()) {
                 id_salle = scanner.nextInt();
                 try {
@@ -40,8 +40,8 @@ public class MenuOffer {
     
         // Affichage des ventes disponibles
         try {
-            System.out.println("\nListe des ventes disponibles : ");
-            String ventes = DBQueries.getVentes(conn, id_salle);
+            System.out.println("\n------ Liste des ventes disponibles ------");
+            String ventes = DBQueries.getVentes(conn, id_salle, true);
             System.out.println(ventes);
         } catch (SQLException e) {
             System.err.println("[!] Erreur dans l'affichage des ventes : " + e);
@@ -51,7 +51,7 @@ public class MenuOffer {
         // L'utilisateur choisit une vente donc un produit
         int id_vente = -1;
         while (id_vente == -1) {
-            System.out.print("Choisissez l'id d'une vente (ex : 1) : ");
+            System.out.print("Choisissez l'id d'une vente : ");
             if (scanner.hasNextInt()) {
                 id_vente = scanner.nextInt();
                 try {
