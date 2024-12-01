@@ -10,7 +10,8 @@ public class MenuMain {
         System.out.println("2 - Creer une offre");
         System.out.println("3 - Afficher le résultat d'une enchère");
         System.out.println("4 - Afficher une table");
-        System.out.println("5 - Quitter");
+        System.out.println("5 - Réinitialiser la BDD");
+        System.out.println("6 - Quitter");
 
         System.out.print("\nVotre choix : ");
 
@@ -27,7 +28,8 @@ public class MenuMain {
             case 1 -> MenuRoom.launch(conn, scanner);
             case 2 -> MenuOffer.launch(conn, scanner);
             case 3 -> MenuResult.launch(conn, scanner);
-            case 5 -> {
+            case 5 -> DatabaseConnection.loadSQL(conn);
+            case 6 -> {
                 System.out.println("Au revoir !");
                 HCInterface.setExit(false);
             }

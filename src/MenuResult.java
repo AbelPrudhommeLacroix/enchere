@@ -1,6 +1,5 @@
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Scanner;
 
 public class MenuResult {
@@ -56,7 +55,6 @@ public class MenuResult {
             if (scanner.hasNextInt()) {
                 id_vente = scanner.nextInt();
                 try {
-                    //TODO : Verifier que la vente existe DANS LA SALLE où l'utilisateur est allé
                     if (!DBQueries.doesVenteExist(conn, id_vente)) {
                         System.err.println("[!] La vente n'existe pas / n'a pas été trouvée");
                         id_vente = -1; // Réinitialiser pour redemander
@@ -71,31 +69,22 @@ public class MenuResult {
             }
         }
 
-
-        //Calcul du gagnant
+        //On verifie que l'enchère est bien finie
+        try {
+            if (!DBQueries.isEnchereFinie(conn, id_vente))
+                throw new Exception();  
+        }catch (Exception e) {
+            System.err.println("[!] L'enchère sur cette vente n'est pas finie");
+            return;
+        }
         
-        /*TODO: verifier si l'enchère selectionner est bien finie,
-        Si oui afficher la dernière offre tout simpement
-
-        */
-
-
-
-        
-        // try {
-        //     List<Offre> infos = DBQueries.getGagnantMontantIllimite(conn, id_salle);
-        //     System.out.println(infos);
-        // } catch (SQLException e) {
-        //     System.err.println("[!] Erreur lors de l'affichage du gagant : " + e.getMessage());
-        // }
-
-
-        
-
-
-
-        
-        
-
+        //Afficher le gagnant
+        try {
+            String gagnant = DBQueries.getEmailEtValeurMeilleureOffre(conn, id_vente);
+            System.out.println("\n[☺] Gagnant de l'enchère : \n" + gagnant);
+        } catch (Exception e) {
+            System.err.println("[!] Erreur en essayant de récuperer l'offre");
+            return;
+        }
     }
 }

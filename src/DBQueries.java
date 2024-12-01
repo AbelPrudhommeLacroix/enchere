@@ -169,6 +169,8 @@ public class DBQueries {
         return idSalle;
     }
 
+
+
     //                                  ========== PRODUIT ==========
     //Renvoi l'id du produit le plus grand (0 si aucun produit existe)
     public static int getMaxProduitId(Connection conn) throws SQLException {
@@ -211,8 +213,10 @@ public class DBQueries {
 
 
     //                                  ========== OFFRE ==========
-    //Renvoi true si une offre est valide ( >= PrixDepart, > Meilleure offre, Quantité <= Stock)
-    public static boolean isOffreValide(Connection conn, int idVente, float prix, int quantite) throws SQLException {
+
+    //Renvoi true si la quantité et le prix d'une offre est valide 
+    public static boolean isPrixQteOffreValide(Connection conn, int idVente, float prix, int quantite) throws SQLException {
+
         String selectProduitSql = "SELECT PrixDepart, Stock FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdVente = ?";
         PreparedStatement stmt = conn.prepareStatement(selectProduitSql);
         stmt.setInt(1, idVente);
@@ -237,6 +241,33 @@ public class DBQueries {
         return true;
     }
 
+    //Renvoi true si la date d'une offre est valide
+    public static boolean isDateOffreValide(Connection conn, int idVente, Timestamp date) throws SQLException {
+        //Verifier si l'enchère est finie pour les ventes limitée
+        if (isVenteLimitee(conn, idVente)) {
+                
+            Timestamp date_debut = getDateDebutVenteLimitee(conn, idVente);
+            Timestamp date_fin = getDateFinVenteLimitee(conn, idVente);
+
+            if (!(date.after(date_debut) && date.before(date_fin))) 
+                throw new IllegalArgumentException("[!] L'enchère sur cette vente est terminée.");
+        
+            return true;
+
+        //Verifier si l'enchère est finie pour les ventes libres
+        } else {
+            Timestamp date_derniere_offre = getDateMeilleureOffre(conn, idVente);
+
+            if (date_derniere_offre != null) { //Si la dernière offre existe
+
+                //On verifie que l'ecart est plus petit que 10 minutes
+                if (date.getTime() - date_derniere_offre.getTime() > 10*60*1000) 
+                    throw new IllegalArgumentException("L'enchère sur cette vente est terminée. (La dernière offfre date de plus de 10 minutes)");
+            }
+            return true;
+        }
+    }
+
     //Renvoi la valeur d'une meilleure offre (0 si elle n'existe pas)
     public static float getValeurMeilleureOffre(Connection conn, int idVente) throws SQLException {
 
@@ -253,6 +284,37 @@ public class DBQueries {
         }
         rs.close();
         return 0;
+    }
+
+
+    //Renvoie l'email de l'utilisateur et le montant de la meilleure offre sous forme de string.
+    public static String getEmailEtValeurMeilleureOffre(Connection conn, int idVente) throws SQLException {
+
+        // Requête SQL pour récupérer l'email et le prix maximum de l'offre pour une vente donnée
+        String selectMeilleureOffreSql = 
+                "SELECT EmailUtilisateur, PrixAchat " +
+                "FROM Offre " +
+                "WHERE IdVente = ? " +
+                "AND PrixAchat = (SELECT MAX(PrixAchat) FROM Offre WHERE IdVente = ?)";
+
+        PreparedStatement stmt = conn.prepareStatement(selectMeilleureOffreSql);
+        stmt.setInt(1, idVente);
+        stmt.setInt(2, idVente);
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            String emailUtilisateur = rs.getString("EmailUtilisateur");
+            float prixAchat = rs.getFloat("PrixAchat");
+            rs.close();
+            stmt.close();
+            return emailUtilisateur + " : " + prixAchat+"€";
+        }
+
+        rs.close();
+        stmt.close();
+        // Retourne une chaîne vide si aucune offre n'existe
+        return "";
     }
 
     //Renvoi la date d'une meilleure offre (null si pas de meilleure offre)
@@ -293,32 +355,7 @@ public class DBQueries {
         if (rs.next() && rs.getInt(1) > 0) {
 
             Timestamp date = Timestamp.from(Instant.now());
-
-            //Verifier si l'enchère est finie pour les ventes limitée
-            if (isVenteLimitee(conn, idVente)) {
-                
-                Timestamp date_debut = getDateDebutVenteLimitee(conn, idVente);
-                Timestamp date_fin = getDateFinVenteLimitee(conn, idVente);
-
-                if (!(date.after(date_debut) && date.before(date_fin))) 
-                    throw new IllegalArgumentException("[!] L'enchère sur cette vente est terminée.");
-            
-            //Verifier si l'enchère est finie pour les ventes libres
-            } else {
-                Timestamp date_derniere_offre = getDateMeilleureOffre(conn, idVente);
-
-                if (date_derniere_offre != null) { //Si la dernière offre existe
-
-                    //On verifie que l'ecart est plus petit que 10 minutes
-                    if (date.getTime() - date_derniere_offre.getTime() > 10*60*1000) 
-                        throw new IllegalArgumentException("L'enchère sur cette vente est terminée. (La dernière offfre date de plus de 10 minutes)");
-                }
-            }
-            
-            //On verifie que le montant est superieur à la dernière offre
-            if (prix < getValeurMeilleureOffre(conn, idVente)) 
-                throw new IllegalArgumentException("Le prix proposé est inférieur à la meilleure offre.");
-    
+            isDateOffreValide(conn, idVente, date);
 
             //On creer une Date si elle n'existe pas deja
             try {
@@ -524,4 +561,24 @@ public class DBQueries {
         throw new SQLException("Aucune date de fin.");
     }
     
+    //Renvoi true si une enchère est finie
+    public static boolean isEnchereFinie(Connection conn, int idVente) throws SQLException {
+
+        Timestamp date = Timestamp.from(Instant.now());
+
+        if (isVenteLimitee(conn, idVente)) {
+
+            //Verifie que l'on est après la date de fin 
+            return date.after(getDateFinVenteLimitee(conn, idVente));
+
+        } else {
+
+            Timestamp date_derniere_offre = getDateMeilleureOffre(conn, idVente);
+            if (date_derniere_offre == null) return false;
+
+            //Verifie que la dernière offre a eu lieu il y a + de 10 minutes
+            return (date.getTime() - date_derniere_offre.getTime() > 10*60*1000);
+        }
+    }
+
 }

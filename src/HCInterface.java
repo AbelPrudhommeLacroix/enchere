@@ -8,6 +8,7 @@ public class HCInterface {
 
     private static boolean exit = false;
 
+
     //Convertit un string en Timestamp
     public static Timestamp convertToTimestamp(String dateStr) throws ParseException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -28,9 +29,6 @@ public class HCInterface {
 
             //Scanner
             Scanner scanner = new Scanner(System.in);
-            
-             //Chargement des tables
-             DatabaseConnection.loadSQL(conn);
              
              //Boucle du menu
              while (!HCInterface.exit) {

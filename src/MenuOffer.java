@@ -55,7 +55,6 @@ public class MenuOffer {
             if (scanner.hasNextInt()) {
                 id_vente = scanner.nextInt();
                 try {
-                    //TODO : Verifier que la vente existe DANS LA SALLE où l'utilisateur est allé
                     if (!DBQueries.doesVenteExist(conn, id_vente)) {
                         System.err.println("[!] La vente n'existe pas / n'a pas été trouvée");
                         id_vente = -1; // Réinitialiser pour redemander
@@ -77,7 +76,7 @@ public class MenuOffer {
             if (scanner.hasNextFloat()) {
                 prix = scanner.nextFloat();
                 try {
-                    DBQueries.isOffreValide(conn, id_vente, prix, -1); // Valider le prix
+                    DBQueries.isPrixQteOffreValide(conn, id_vente, prix, -1); // Valider le prix
                 } catch (IllegalArgumentException e) {
                     System.err.println("[!] L'offre n'est pas valide : " + e);
                     prix = -1; // Réinitialiser pour redemander
@@ -101,7 +100,7 @@ public class MenuOffer {
                     quantite = -1; // Réinitialiser pour redemander
                 }
                 try {
-                    DBQueries.isOffreValide(conn, id_vente, prix, quantite); // Valider la quantité
+                    DBQueries.isPrixQteOffreValide(conn, id_vente, prix, quantite); // Valider la quantité
                 } catch (IllegalArgumentException e) {
                     System.err.println("[!] L'offre n'est pas valide : " + e);
                     quantite = -1; // Réinitialiser pour redemander
