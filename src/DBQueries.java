@@ -3,14 +3,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
 
-import java.util.List;
 import java.util.Scanner;
-
-import java.time.LocalDateTime;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-
 
 public class DBQueries {
 
@@ -40,7 +34,9 @@ public class DBQueries {
         reader.close();
     }
 
-    
+
+
+    //                                  ========== CATEGORIES ==========
     //Renvoi les catégories (ou throw une exception si la requette ne reussie pas)
     public static String searchCategories(Connection conn, Scanner scanner) throws SQLException {
 
@@ -61,7 +57,6 @@ public class DBQueries {
         return categories;
     }
 
-
     //Renvoi true si une Categorie avec le nomCategorie existe
     public static boolean doesCategoryExist(Connection conn, String nomCategorie) throws SQLException {
 
@@ -77,6 +72,8 @@ public class DBQueries {
     }
 
 
+
+    //                                  ========== SALLE ==========
     //Renvoi l'id de la salle le plus grand (0 si aucune salle existe)
     public static int getMaxSalleId(Connection conn) throws SQLException {
 
@@ -96,6 +93,83 @@ public class DBQueries {
         }
     }
 
+    //Renvoi le type de vente d'une salle ("" si la salle n'a pas de vente)
+    public static String getTypeVenteSalle(Connection conn, int idSalle) throws SQLException {
+
+        String selectTypeVenteSalleSql = 
+            "SELECT IdVente, Sens, Revocabilite, NbOffres " +
+            "FROM Vente " +
+            "WHERE IdSalle = ?";
+        
+        PreparedStatement stmt = conn.prepareStatement(selectTypeVenteSalleSql);
+        stmt.setInt(1, idSalle);
+        ResultSet rs = stmt.executeQuery();
+        
+        // Si une vente est trouvée pour cette salle
+        if (rs.next()) {
+
+            String type_duree = (isVenteLimitee(conn, rs.getInt("IdVente")) == true ? "limitée" : "libre");
+            String sens = rs.getString("Sens");
+            String revocabilite = (rs.getInt("Revocabilite") == 1) ? "oui" : "non";
+            int nbOffres = rs.getInt("NbOffres");
+            
+            rs.close();
+            stmt.close();
+            return "Durée : "+type_duree+", Sens : "+sens+", Revocabilité : "+revocabilite+", Nombre d'offres max : "+nbOffres;
+
+        } else {
+            rs.close();
+            stmt.close();
+            return "";
+        }
+    }
+
+
+    //Renvoi l'id de chaque salle de vente, leur categorie et leur type de vente
+    public static String getSallesDeVente(Connection conn) throws SQLException {
+        String selectSalleDeVenteSql = "SELECT IdSalle, NomCategorie FROM SalleDeVente";
+        PreparedStatement stmt = conn.prepareStatement(selectSalleDeVenteSql);
+        ResultSet rs = stmt.executeQuery();
+        StringBuilder salles = new StringBuilder();
+        while (rs.next()) {
+
+            int idSalle = rs.getInt("IdSalle");
+            String type_de_vente = getTypeVenteSalle(conn, idSalle);
+            String nomCategorie = rs.getString("NomCategorie");
+
+            salles.append(idSalle + " - "+nomCategorie + " ("+type_de_vente+")\n");
+        }
+        rs.close();
+        return salles.toString();
+    }
+
+    //Renvoi true si la salle de vente existe
+    public static boolean doesSalleExist(Connection conn, int idSalle) throws SQLException {
+        String checkSalleSql = "SELECT 1 FROM SalleDeVente WHERE IdSalle = ?";
+        PreparedStatement stmt = conn.prepareStatement(checkSalleSql);
+        stmt.setInt(1, idSalle);
+        ResultSet rs = stmt.executeQuery();
+        boolean salleExists = rs.next();
+        rs.close();
+        return salleExists;
+    }
+
+    //Creer une salle avec la categorie categorie
+    public static int creationSalle(Connection conn, Scanner scanner, String categorie) throws SQLException {
+
+        int idSalle = getMaxSalleId(conn) + 1; // Id unique
+
+        String insertUserSql = "INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (?, ?)";
+        PreparedStatement insertStmt = conn.prepareStatement(insertUserSql);
+        insertStmt.setInt(1, idSalle);
+        insertStmt.setString(2, categorie);
+
+        insertStmt.executeQuery();
+
+        return idSalle;
+    }
+
+    //                                  ========== PRODUIT ==========
     //Renvoi l'id du produit le plus grand (0 si aucun produit existe)
     public static int getMaxProduitId(Connection conn) throws SQLException {
         
@@ -113,41 +187,6 @@ public class DBQueries {
             rs.close();
             return 0;
         }
-    }
-
-    //Renvoi l'id de la vente le plus grand (0 si aucune vente n'existe)
-    public static int getMaxVenteId(Connection conn) throws SQLException {
-
-        String getMaxVenteIdSql = "SELECT IdVente FROM Vente ORDER BY IdVente DESC FETCH FIRST 1 ROWS ONLY";
-        PreparedStatement stmt = conn.prepareStatement(getMaxVenteIdSql);
-
-        ResultSet rs = stmt.executeQuery();
-
-        if (rs.next()) {
-            // Récupérer le plus grand IdVente
-            int maxVenteId = rs.getInt("IdVente");
-            rs.close();
-            return maxVenteId;
-        } else {
-            rs.close();
-            return 0;
-        }
-    }
-
-
-    //Creer une salle avec la categorie categorie
-    public static int creationSalle(Connection conn, Scanner scanner, String categorie) throws SQLException {
-
-        int idSalle = getMaxSalleId(conn) + 1; // Id unique
-
-        String insertUserSql = "INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (?, ?)";
-        PreparedStatement insertStmt = conn.prepareStatement(insertUserSql);
-        insertStmt.setInt(1, idSalle);
-        insertStmt.setString(2, categorie);
-
-        insertStmt.executeQuery();
-
-        return idSalle;
     }
 
     //Creer un produit
@@ -169,60 +208,9 @@ public class DBQueries {
         return idProduit;
     }
 
-    //Renvoi l'id de chaque salle de vente et leur categorie
-    public static String getSallesDeVente(Connection conn) throws SQLException {
-        String selectSalleDeVenteSql = "SELECT IdSalle, NomCategorie FROM SalleDeVente";
-        PreparedStatement stmt = conn.prepareStatement(selectSalleDeVenteSql);
-        ResultSet rs = stmt.executeQuery();
-        StringBuilder salles = new StringBuilder();
-        while (rs.next()) {
-            int idSalle = rs.getInt("IdSalle");
-            String nomCategorie = rs.getString("NomCategorie");
-            salles.append(idSalle).append(" - ").append(nomCategorie).append("\n");
-        }
-        rs.close();
-        return salles.toString();
-    }
 
-    //Affiche toutes les ventes disponibles pour une salle de vente : (idVente, NomProduit, Stock, PrixDepart, Sens, Revocabilite, NbOffres)
-    public static String getVentes(Connection conn, int idSalle, boolean showBest) throws SQLException {
-        String selectVentesSql = "SELECT IdVente, NomProduit, Stock, PrixDepart, Sens, Revocabilite, NbOffres FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdSalle = ?";
-        PreparedStatement stmt = conn.prepareStatement(selectVentesSql);
-        stmt.setInt(1, idSalle);
-        ResultSet rs = stmt.executeQuery();
-        String ventes = "";
-        while(rs.next()) {
-            int idVente = rs.getInt("IdVente");
-            String nomProduit = rs.getString("NomProduit");
-            int stock = rs.getInt("Stock");
-            float prixDepart = rs.getFloat("PrixDepart");
-            String sens = rs.getString("Sens");
-            boolean revocabilite = rs.getBoolean("Revocabilite");
-            int nbOffres = rs.getInt("NbOffres");
-            
-            if (showBest) {
-                float meilleureOffre = getMeilleureOffre(conn, idVente);
-                ventes += idVente+" - "+nomProduit+" (Stock : "+stock+", Prix de départ : "+prixDepart+"€, Meilleure Offre : "+meilleureOffre+"€, Sens : "+sens+",  Revocabilite : "+revocabilite+", Nombre d'offres : "+nbOffres+")\n";
-            } else {
-                ventes += idVente+" - "+nomProduit+" (Stock : "+stock+", Prix de départ : "+prixDepart+"€, Sens : "+sens+",  Revocabilite : "+revocabilite+", Nombre d'offres : "+nbOffres+")\n";
-            }
-        }
-        rs.close();
-        return ventes;
-        
-    }
 
-    //Renvoi true si la salle de vente existe
-    public static boolean doesSalleExist(Connection conn, int idSalle) throws SQLException {
-        String checkSalleSql = "SELECT 1 FROM SalleDeVente WHERE IdSalle = ?";
-        PreparedStatement stmt = conn.prepareStatement(checkSalleSql);
-        stmt.setInt(1, idSalle);
-        ResultSet rs = stmt.executeQuery();
-        boolean salleExists = rs.next();
-        rs.close();
-        return salleExists;
-    }
-
+    //                                  ========== OFFRE ==========
     //Renvoi true si une offre est valide ( >= PrixDepart, > Meilleure offre, Quantité <= Stock)
     public static boolean isOffreValide(Connection conn, int idVente, float prix, int quantite) throws SQLException {
         String selectProduitSql = "SELECT PrixDepart, Stock FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdVente = ?";
@@ -237,7 +225,7 @@ public class DBQueries {
             throw new IllegalArgumentException("Le prix proposé est inférieur au prix de départ.");
         }
         
-        float meilleureOffre = getMeilleureOffre(conn, idVente);
+        float meilleureOffre = getValeurMeilleureOffre(conn, idVente);
         if (prix <= meilleureOffre) {
             throw new IllegalArgumentException("Le prix proposé est inférieur ou égal à la meilleure offre actuelle.");
         }
@@ -249,73 +237,109 @@ public class DBQueries {
         return true;
     }
 
-    //Renvoi la meilleure offre
-    public static float getMeilleureOffre(Connection conn, int idVente) throws SQLException {
+    //Renvoi la valeur d'une meilleure offre (0 si elle n'existe pas)
+    public static float getValeurMeilleureOffre(Connection conn, int idVente) throws SQLException {
+
         String selectMeilleureOffreSql = "SELECT MAX(PrixAchat) FROM Offre WHERE IdVente = ?";
+
         PreparedStatement stmt = conn.prepareStatement(selectMeilleureOffreSql);
         stmt.setInt(1, idVente);
         ResultSet rs = stmt.executeQuery();
-        rs.next();
-        float meilleureOffre = rs.getFloat("MAX(PrixAchat)");
+
+        if (rs.next()) {
+            float meilleureOffre = rs.getFloat("MAX(PrixAchat)");
+            rs.close();
+            return meilleureOffre;
+        }
         rs.close();
-        return meilleureOffre;
+        return 0;
     }
 
-    //Renvoi true si la vente existe
-    public static boolean doesVenteExist(Connection conn, int idVente) throws SQLException {
-        String checkVenteSql = "SELECT 1 FROM Vente WHERE IdVente = ?";
-        PreparedStatement stmt = conn.prepareStatement(checkVenteSql);
+    //Renvoi la date d'une meilleure offre (null si pas de meilleure offre)
+    public static Timestamp getDateMeilleureOffre(Connection conn, int idVente) throws SQLException {
+
+        // Requête SQL pour obtenir la date de la meilleure offre
+        String selectDateMeilleureOffreSql = 
+            "SELECT DateHeureOffre " +
+            "FROM Offre " +
+            "WHERE IdVente = ? " +
+            "AND PrixAchat = (SELECT MAX(PrixAchat) FROM Offre WHERE IdVente = ?)";
+    
+        PreparedStatement stmt = conn.prepareStatement(selectDateMeilleureOffreSql);
         stmt.setInt(1, idVente);
+        stmt.setInt(2, idVente);
         ResultSet rs = stmt.executeQuery();
-        boolean venteExists = rs.next();
+    
+        if (rs.next()) {
+            Timestamp dateMeilleureOffre = rs.getTimestamp("DateHeureOffre");
+            rs.close();
+            return dateMeilleureOffre;
+        }
+
         rs.close();
-        return venteExists;
+        return null;
     }
 
     //Creer une offre dont la primary key est DateHeureOffre, Email, IdVente
-    public static void creationOffre(Connection conn, float prix, int quantite, int idVente, String email) throws SQLException {
+    public static void creationOffre(Connection conn, float prix, int quantite, int idVente, String email) throws SQLException, IllegalArgumentException {
 
-        // Vérifiez si l'IdVente existe dans la table parente
+        //On récupère la vente
         String checkVenteSql = "SELECT COUNT(*) FROM Vente WHERE IdVente = ?";
         PreparedStatement checkStmt = conn.prepareStatement(checkVenteSql);
         checkStmt.setInt(1, idVente);
         ResultSet rs = checkStmt.executeQuery();
-        if (rs.next() && rs.getInt(1) > 0) {
-            // L'IdVente existe, procédez à l'insertion de l'offre
-            Date date = new Date(System.currentTimeMillis());
-            Timestamp currentTimestamp = Timestamp.from(Instant.now());
 
+        //On verifie qu'elle existe
+        if (rs.next() && rs.getInt(1) > 0) {
+
+            Timestamp date = Timestamp.from(Instant.now());
+
+            //Verifier si l'enchère est finie pour les ventes limitée
             if (isVenteLimitee(conn, idVente)) {
+                
                 Timestamp date_debut = getDateDebutVenteLimitee(conn, idVente);
                 Timestamp date_fin = getDateFinVenteLimitee(conn, idVente);
-               
-            }
-            //TODO : verifier que date_debut < date < date_fin si limite  
-            //TODO : ou que derniere_offre_date + 10 min > date si libre  sinon refuser
-            // (Faire à la fin sinon trop chiant)
 
-            //TODO : refuser l'offre si le montant < au gagnant actuel
+                if (!(date.after(date_debut) && date.before(date_fin))) 
+                    throw new IllegalArgumentException("[!] L'enchère sur cette vente est terminée.");
+            
+            //Verifier si l'enchère est finie pour les ventes libres
+            } else {
+                Timestamp date_derniere_offre = getDateMeilleureOffre(conn, idVente);
+
+                if (date_derniere_offre != null) { //Si la dernière offre existe
+
+                    //On verifie que l'ecart est plus petit que 10 minutes
+                    if (date.getTime() - date_derniere_offre.getTime() > 10*60*1000) 
+                        throw new IllegalArgumentException("L'enchère sur cette vente est terminée. (La dernière offfre date de plus de 10 minutes)");
+                }
+            }
+            
+            //On verifie que le montant est superieur à la dernière offre
+            if (prix < getValeurMeilleureOffre(conn, idVente)) 
+                throw new IllegalArgumentException("Le prix proposé est inférieur à la meilleure offre.");
     
+
+            //On creer une Date si elle n'existe pas deja
             try {
                 String insertDateSql = "INSERT INTO DateOffre (DateHeureOffre) VALUES (?)";
                 PreparedStatement insertDateStmt = conn.prepareStatement(insertDateSql);
-                insertDateStmt.setDate(1, date);
+                insertDateStmt.setTimestamp(1, date);
                 insertDateStmt.executeUpdate();
             } catch (SQLException e) {
-                // On ignore l'erreur si la date existe déjà
             }
     
+            //On creer l'offre
             String insertOffreSql = "INSERT INTO Offre (PrixAchat, QuantiteOffre, IdVente, EmailUtilisateur, DATEHEUREOFFRE) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertOffreSql);
             insertStmt.setFloat(1, prix);
             insertStmt.setInt(2, quantite);
             insertStmt.setInt(3, idVente);
             insertStmt.setString(4, email);
-            insertStmt.setDate(5, date);
+            insertStmt.setTimestamp(5, date);
             insertStmt.executeUpdate();
 
         } else {
-            // L'IdVente n'existe pas, lancez une exception ou gérez l'erreur
             throw new SQLException("La vente n'existe plus.");
         }
     }
@@ -331,7 +355,64 @@ public class DBQueries {
         }
     }
     
+
+
+    //                                  ========== VENTE ==========
+    //Renvoi true si la vente existe
+    public static boolean doesVenteExist(Connection conn, int idVente) throws SQLException {
+        String checkVenteSql = "SELECT 1 FROM Vente WHERE IdVente = ?";
+        PreparedStatement stmt = conn.prepareStatement(checkVenteSql);
+        stmt.setInt(1, idVente);
+        ResultSet rs = stmt.executeQuery();
+        boolean venteExists = rs.next();
+        rs.close();
+        return venteExists;
+    }
+
+    //Affiche toutes les ventes disponibles pour une salle de vente : (idVente, NomProduit, Stock, PrixDepart)
+    public static String getVentes(Connection conn, int idSalle, boolean showBest) throws SQLException {
+        String selectVentesSql = "SELECT IdVente, NomProduit, Stock, PrixDepart FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdSalle = ?";
+        PreparedStatement stmt = conn.prepareStatement(selectVentesSql);
+        stmt.setInt(1, idSalle);
+        ResultSet rs = stmt.executeQuery();
+        String ventes = "";
+        while(rs.next()) {
+            int idVente = rs.getInt("IdVente");
+            String nomProduit = rs.getString("NomProduit");
+            int stock = rs.getInt("Stock");
+            float prixDepart = rs.getFloat("PrixDepart");
+            
+            if (showBest) {
+                float meilleureOffre = getValeurMeilleureOffre(conn, idVente);
+                ventes += idVente+" - "+nomProduit+" (Stock : "+stock+", Prix de départ : "+prixDepart+"€, Meilleure Offre : "+meilleureOffre+"€)\n";
+            } else {
+                ventes += idVente+" - "+nomProduit+" (Stock : "+stock+", Prix de départ : "+prixDepart+"€)\n";
+            }
+        }
+        rs.close();
+        return ventes;
+        
+    }
     
+    //Renvoi l'id de la vente le plus grand (0 si aucune vente n'existe)
+    public static int getMaxVenteId(Connection conn) throws SQLException {
+
+        String getMaxVenteIdSql = "SELECT IdVente FROM Vente ORDER BY IdVente DESC FETCH FIRST 1 ROWS ONLY";
+        PreparedStatement stmt = conn.prepareStatement(getMaxVenteIdSql);
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            // Récupérer le plus grand IdVente
+            int maxVenteId = rs.getInt("IdVente");
+            rs.close();
+            return maxVenteId;
+        } else {
+            rs.close();
+            return 0;
+        }
+    }
+
     //Creer une vente
     public static int creationVente(Connection conn, float prixDepart, String sens, int revocabilite, int nbOffres, int idSalle, int idProduit) throws SQLException {
 
@@ -383,8 +464,8 @@ public class DBQueries {
 
         String checkVenteLimiteeSql = 
             "SELECT CASE " +
-            "           WHEN vlim.IdVente IS NOT NULL THEN true " +
-            "           ELSE false " +
+            "           WHEN vlim.IdVente IS NOT NULL THEN 1 " +
+            "           ELSE 0 " +
             "       END AS isLimitee " +
             "FROM Vente v " +
             "LEFT JOIN VenteLimite vlim ON v.IdVente = vlim.IdVente " +
@@ -395,7 +476,7 @@ public class DBQueries {
         ResultSet rs = stmt.executeQuery();
     
         if (rs.next()) {
-            boolean isLimitee = rs.getBoolean("isLimitee");
+            boolean isLimitee = (rs.getInt("isLimitee") == 1);
             rs.close();
             stmt.close();
             return isLimitee; 
@@ -424,7 +505,6 @@ public class DBQueries {
         throw new SQLException("Aucune date de début");
     }
 
-
     //Récupérer la date de fin
     public static Timestamp getDateFinVenteLimitee(Connection conn, int idVente) throws SQLException {
         String getDateFinSql = "SELECT DateFin " + "FROM VenteLimite " + "WHERE IdVente = ?";
@@ -445,7 +525,3 @@ public class DBQueries {
     }
     
 }
-
-
-
-   

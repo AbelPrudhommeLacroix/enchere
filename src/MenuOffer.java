@@ -132,11 +132,14 @@ public class MenuOffer {
             }
         }
     
+
+
         // Création de l'offre associée à la date, l'email et l'id de la vente
         try {
             DBQueries.creationOffre(conn, prix, quantite, id_vente, email);
         } catch (Exception e) {
             System.err.println("[!] Erreur lors de la création de l'offre : " + e.getMessage());
+            return;
         }
 
         System.out.println("\n[☺] Offre crée !");
