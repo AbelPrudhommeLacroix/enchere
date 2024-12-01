@@ -197,8 +197,6 @@ public class MenuRoom {
                     try {
                         date_debut = HCInterface.convertToTimestamp(date_debut_str);
                         date_fin = HCInterface.convertToTimestamp(date_fin_str);
-                        //TODO : Verifier si date_fin > date_debut
-                        //TODO : Verifier que date_debut >= date actuelle
                     } catch (Exception e) {
                         System.err.println("[!] Erreur, format de date incorrect : "+e.getMessage());
                         date_debut_str = "";
