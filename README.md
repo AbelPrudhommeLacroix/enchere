@@ -1,4 +1,15 @@
 # Plateforme d'enchère
+**Hélain Zimmermann, Abel Prud’homme Lacroix, Mateo Bedel, Nour El Hamidi, Nathan Guerin**
+
+
+## Introduction
+Ce document présente le compte rendu détaillé du projet de conception et de développement de notre plateforme d’enchères. Le projet a pour objectif de réaliser un système robuste, respectant les règles de normalisation des bases de données, tout en garantissant une interface homme-machine fonctionnelle et intuitive. Il s'agit de permettre à des utilisateurs d'interagir avec des ventes variées, d'y soumettre des offres, et de suivre le processus d'attribution des produits mis en enchère.
+
+Le rapport est structuré de manière à couvrir les aspects fondamentaux du projet, depuis la modélisation conceptuelle et relationnelle des données jusqu’à la mise en œuvre technique des fonctionnalités principales. Nous avons pris soin de détailler les dépendances fonctionnelles, les contraintes contextuelles et les relations entre entités afin de proposer une solution à la fois complète et optimisée.
+
+Nous aborderons également les choix de conception, les difficultés rencontrées, ainsi que les stratégies employées pour répondre aux contraintes fonctionnelles et non fonctionnelles. Ensuite, une attention particulière est portée sur l'analyse des fonctionnalités, les requêtes SQL mises en place, et l’organisation du travail au sein de l’équipe pour mener ce projet à bien.
+
+Ce compte rendu vise à documenter non seulement le résultat final, mais aussi les apprentissages et les défis rencontrés lors du développement de la plateforme.
 
 ## Dépendences & contraintes
 
@@ -25,7 +36,9 @@
      PrixDepart > 0 <br><br>
      PrixAchat > 0 <br><br>
      Quantite > 0 <br><br>
-     Fin > Debut
+     Fin > Debut <br><br>
+     DateHeure > Debut <br><br>
+     Quantite > Stock 
     </td>
     <td style=" text-align: left; border:1px solid">
      Email ↠ Offre <br><br>
@@ -39,7 +52,9 @@
     </td>
     <td style=" text-align: left; border:1px solid">
      Une vente à durée libre implique un délai maximal de 10 minutes entre deux offres <br><br>
-     Ventes par défaut : Montantes, Non révocables, Sans limite de temps, Permettant plusieurs enchères par utilisateur
+     Ventes par défaut : Montantes, Non révocables, Sans limite de temps, Permettant plusieurs enchères par utilisateur <br><br>
+     Vente montante: Le prix d'achat doit être plus grand que le prix d'achat de l'offre précédente (et que le prix de départ si c'est la première offre) <br><br>
+     Utilisateur: peut être limité à une offre uniquement, ou en faire autant qu'il veut 
     </td>
   </tr>
 </table>
