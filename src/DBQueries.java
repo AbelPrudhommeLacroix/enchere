@@ -31,6 +31,7 @@ public class DBQueries {
                 stmt.execute(sql);
             }
         }
+        conn.commit();
         reader.close();
     }
 
@@ -261,33 +262,51 @@ public class DBQueries {
 
     //                                  ========== OFFRE ==========
 
-    //Renvoi true si la quantité et le prix d'une offre est valide 
-    public static boolean isPrixQteOffreValide(Connection conn, int idVente, float prix, int quantite) throws SQLException {
-
-        String selectProduitSql = "SELECT PrixDepart, Stock FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdVente = ?";
+    public static boolean isPrixValide(Connection conn, int idVente, float prix) throws SQLException {
+        String selectProduitSql = "SELECT PrixDepart FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdVente = ?";
         PreparedStatement stmt = conn.prepareStatement(selectProduitSql);
         stmt.setInt(1, idVente);
         ResultSet rs = stmt.executeQuery();
-        rs.next();
-        float prixDepart = rs.getFloat("PrixDepart");
-        int stock = rs.getInt("Stock");
+    
+        if (rs.next()) {
+            float prixDepart = rs.getFloat("PrixDepart");
+    
+            // Vérifier si le prix est supérieur au prix de départ (pour une vente croissante) ou égal (pour une vente décroissante)
+            if (prix < prixDepart) {
+                throw new IllegalArgumentException("Le prix proposé est inférieur au prix de départ.");
+            }
+    
+            // Vérifier que le prix est supérieur à la meilleure offre actuelle
+            float meilleureOffre = getValeurMeilleureOffre(conn, idVente);
+            if (prix <= meilleureOffre) {
+                throw new IllegalArgumentException("Le prix proposé est inférieur ou égal à la meilleure offre actuelle.");
+            }
+        }
+    
         rs.close();
-        if (prix < prixDepart) {
-            throw new IllegalArgumentException("Le prix proposé est inférieur au prix de départ.");
-        }
-        
-        float meilleureOffre = getValeurMeilleureOffre(conn, idVente);
-        if (prix <= meilleureOffre) {
-            throw new IllegalArgumentException("Le prix proposé est inférieur ou égal à la meilleure offre actuelle.");
-        }
-        
-        if (quantite > stock) {
-            throw new IllegalArgumentException("La quantité proposée est supérieure au stock disponible.");
-        }
-        
-        return true;
+        return true; // Le prix est valide
     }
 
+    public static boolean isQuantiteValide(Connection conn, int idVente, int quantite) throws SQLException {
+        String selectProduitSql = "SELECT Stock FROM Vente, Produit WHERE Vente.IdProduit = Produit.IdProduit AND IdVente = ?";
+        PreparedStatement stmt = conn.prepareStatement(selectProduitSql);
+        stmt.setInt(1, idVente);
+        ResultSet rs = stmt.executeQuery();
+    
+        if (rs.next()) {
+            int stock = rs.getInt("Stock");
+    
+            // Vérifier que la quantité proposée ne dépasse pas le stock disponible
+            if (quantite > stock) {
+                throw new IllegalArgumentException("La quantité proposée est supérieure au stock disponible.");
+            }
+        }
+    
+        rs.close();
+        return true; // La quantité est valide
+    }
+    
+    
     //Renvoi true si la date d'une offre est valide
     public static boolean isDateOffreValide(Connection conn, int idVente, Timestamp date) throws SQLException {
         //Verifier si l'enchère est finie pour les ventes limitée
@@ -408,7 +427,8 @@ public class DBQueries {
     
                     // Vérifier la validité de l’offre
                     isDateOffreValide(conn, idVente, date);
-                    isPrixQteOffreValide(conn, idVente, prix, quantite);
+                    isPrixValide(conn, idVente, prix);
+                    isQuantiteValide(conn, idVente, quantite);
     
                     // Insérer une date si nécessaire
                     String insertDateSql = "INSERT INTO DateOffre (DateHeureOffre) VALUES (?)";
@@ -681,6 +701,30 @@ public class DBQueries {
             //Verifie que la dernière offre a eu lieu il y a + de 10 minutes
             return (date.getTime() - date_derniere_offre.getTime() > 10*60*1000);
         }
+    }
+
+    public static boolean isVenteCroissante(Connection conn, int idVente) throws SQLException {
+        String selectSensSql = "SELECT Sens FROM Vente WHERE IdVente = ?";
+        PreparedStatement stmt = conn.prepareStatement(selectSensSql);
+        stmt.setInt(1, idVente);
+        ResultSet rs = stmt.executeQuery();
+        rs.next();
+        String sens = rs.getString("Sens");
+        rs.close();
+        System.out.println(sens);
+        return sens.equals("croissant");
+    }
+
+    // récupérer le prix de départ d'une vente
+    public static float getPrixDepartVente(Connection conn, int idVente) throws SQLException {
+        String selectPrixDepartSql = "SELECT PrixDepart FROM Vente WHERE IdVente = ?";
+        PreparedStatement stmt = conn.prepareStatement(selectPrixDepartSql);
+        stmt.setInt(1, idVente);
+        ResultSet rs = stmt.executeQuery();
+        rs.next();
+        float prixDepart = rs.getFloat("PrixDepart");
+        rs.close();
+        return prixDepart;
     }
 
 }

@@ -71,17 +71,28 @@ public class MenuOffer {
     
         // L'utilisateur fait une offre sur un produit pour un prix et une quantité qu'il donne
         float prix = -1;
+        try {
+            // Vérification si la vente est croissante, et récupération du prix de départ si nécessaire
+            if (!DBQueries.isVenteCroissante(conn, id_vente)) {
+                prix = DBQueries.getPrixDepartVente(conn, id_vente);
+            }
+        } catch (SQLException e) {
+            System.err.println("[!] Erreur lors de la vérification ou récupération du prix de départ : " + e.getMessage());
+            return;
+        }
+
         while (prix == -1) {
             System.out.print("Prix de l'offre (ex : 10.50) : ");
             if (scanner.hasNextFloat()) {
                 prix = scanner.nextFloat();
                 try {
-                    DBQueries.isPrixQteOffreValide(conn, id_vente, prix, -1); // Valider le prix
+                    // Validation du prix
+                    DBQueries.isPrixValide(conn, id_vente, prix); // Valider le prix avec la nouvelle fonction
                 } catch (IllegalArgumentException e) {
-                    System.err.println("[!] L'offre n'est pas valide : " + e);
+                    System.err.println("[!] L'offre n'est pas valide : " + e.getMessage());
                     prix = -1; // Réinitialiser pour redemander
-                } catch (Exception e) {
-                    System.err.println("[!] L'offre n'est pas valide : " + e);
+                } catch (SQLException e) {
+                    System.err.println("[!] Erreur SQL lors de la validation du prix : " + e.getMessage());
                     prix = -1; // Réinitialiser pour redemander
                 }
             } else {
@@ -89,7 +100,8 @@ public class MenuOffer {
                 scanner.next(); // Consommer l'entrée invalide
             }
         }
-    
+
+        System.out.println("Prix de l'offre : " + prix);
         int quantite = -1;
         while (quantite == -1) {
             System.out.print("Quantité de l'offre : ");
@@ -98,15 +110,19 @@ public class MenuOffer {
                 if (quantite <= 0) {
                     System.err.println("[!] La quantité doit être strictement positive.");
                     quantite = -1; // Réinitialiser pour redemander
-                }
-                try {
-                    DBQueries.isPrixQteOffreValide(conn, id_vente, prix, quantite); // Valider la quantité
-                } catch (IllegalArgumentException e) {
-                    System.err.println("[!] L'offre n'est pas valide : " + e);
-                    quantite = -1; // Réinitialiser pour redemander
-                } catch (Exception e) {
-                    System.err.println("[!] L'offre n'est pas valide : " + e);
-                    quantite = -1; // Réinitialiser pour redemander
+                } else {
+                    try {
+                        // Validation de la quantité
+                        System.out.println("Quantité de l'offre : " + quantite);
+                        DBQueries.isQuantiteValide(conn, id_vente, quantite); // Valider la quantité avec la nouvelle fonction
+                        System.out.println("Quantité de l'offre verifiée");
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("[!] L'offre n'est pas valide : " + e.getMessage());
+                        quantite = -1; // Réinitialiser pour redemander
+                    } catch (SQLException e) {
+                        System.err.println("[!] Erreur SQL lors de la validation de la quantité : " + e.getMessage());
+                        quantite = -1; // Réinitialiser pour redemander
+                    }
                 }
             } else {
                 System.err.println("[!] Entrée invalide. Veuillez entrer un nombre entier.");
