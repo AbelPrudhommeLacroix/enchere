@@ -101,7 +101,6 @@ public class MenuOffer {
             }
         }
 
-        System.out.println("Prix de l'offre : " + prix);
         int quantite = -1;
         while (quantite == -1) {
             System.out.print("Quantité de l'offre : ");
@@ -115,7 +114,6 @@ public class MenuOffer {
                         // Validation de la quantité
                         System.out.println("Quantité de l'offre : " + quantite);
                         DBQueries.isQuantiteValide(conn, id_vente, quantite); // Valider la quantité avec la nouvelle fonction
-                        System.out.println("Quantité de l'offre verifiée");
                     } catch (IllegalArgumentException e) {
                         System.err.println("[!] L'offre n'est pas valide : " + e.getMessage());
                         quantite = -1; // Réinitialiser pour redemander
