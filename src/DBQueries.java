@@ -156,20 +156,42 @@ public class DBQueries {
 
     //Creer une salle avec la categorie categorie
     public static int creationSalle(Connection conn, Scanner scanner, String categorie) throws SQLException {
-
-        int idSalle = getMaxSalleId(conn) + 1; // Id unique
-
-        String insertUserSql = "INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (?, ?)";
-        PreparedStatement insertStmt = conn.prepareStatement(insertUserSql);
-        insertStmt.setInt(1, idSalle);
-        insertStmt.setString(2, categorie);
-
-        insertStmt.executeQuery();
-
+        int idSalle = 0;
+        boolean transactionSuccess = false;
+        int retryCount = 0;
+        final int MAX_RETRIES = 5;
+    
+        while (!transactionSuccess && retryCount < MAX_RETRIES) {
+            try {
+                idSalle = getMaxSalleId(conn) + 1; // Récupère un ID unique
+                
+                String insertSalleSql = "INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (?, ?)";
+                PreparedStatement stmt = conn.prepareStatement(insertSalleSql);
+                stmt.setInt(1, idSalle);
+                stmt.setString(2, categorie);
+                
+                stmt.executeUpdate(); // Insère la salle
+                conn.commit(); // Commit la transaction
+                transactionSuccess = true;
+    
+            } catch (SQLIntegrityConstraintViolationException e) {
+                // Gestion des conflits d'ID, on réessaie
+                System.err.println("[!] Conflit sur IdSalle, tentative de réessayer...");
+                conn.rollback(); // Annule la transaction
+                retryCount++;
+            } catch (SQLException e) {
+                // Autres erreurs SQL
+                conn.rollback();
+                throw e; // Rethrow après rollback
+            }
+        }
+    
+        if (!transactionSuccess) {
+            throw new SQLException("Impossible de créer une salle après " + MAX_RETRIES + " tentatives.");
+        }
+    
         return idSalle;
     }
-
-
 
     //                                  ========== PRODUIT ==========
     //Renvoi l'id du produit le plus grand (0 si aucun produit existe)
@@ -193,22 +215,47 @@ public class DBQueries {
 
     //Creer un produit
     public static int creationProduit(Connection conn, String nomProduit, float prixRevient, int stock, String nomCategorie) throws SQLException {
-
-        String insertProduitSql = "INSERT INTO Produit (IdProduit, NomProduit, PrixRevient, Stock, NomCategorie) VALUES (?, ?, ?, ?, ?)";
-
-        int idProduit = getMaxProduitId(conn) + 1;
-
-        PreparedStatement insertStmt = conn.prepareStatement(insertProduitSql);
-        insertStmt.setInt(1, idProduit);
-        insertStmt.setString(2, nomProduit);
-        insertStmt.setFloat(3, prixRevient);
-        insertStmt.setInt(4, stock);
-        insertStmt.setString(5, nomCategorie);
-
-        insertStmt.executeQuery();
-
+        int idProduit = 0;
+        boolean transactionSuccess = false;
+        int retryCount = 0;
+        final int MAX_RETRIES = 5; // Nombre maximum de tentatives
+    
+        while (!transactionSuccess && retryCount < MAX_RETRIES) {
+            try {
+                // Récupérer un nouvel ID unique
+                idProduit = getMaxProduitId(conn) + 1;
+    
+                String insertProduitSql = "INSERT INTO Produit (IdProduit, NomProduit, PrixRevient, Stock, NomCategorie) VALUES (?, ?, ?, ?, ?)";
+                PreparedStatement insertStmt = conn.prepareStatement(insertProduitSql);
+                insertStmt.setInt(1, idProduit);
+                insertStmt.setString(2, nomProduit);
+                insertStmt.setFloat(3, prixRevient);
+                insertStmt.setInt(4, stock);
+                insertStmt.setString(5, nomCategorie);
+    
+                insertStmt.executeUpdate(); // Exécute l'insertion
+                conn.commit(); // Commit explicite de la transaction
+                transactionSuccess = true; // Marque la transaction comme réussie
+            } catch (SQLIntegrityConstraintViolationException e) {
+                // Conflit d'ID détecté, on annule et réessaye avec un nouvel ID
+                System.err.println("[!] Conflit sur IdProduit, tentative de réessayer...");
+                conn.rollback(); // Annule la transaction
+                retryCount++;
+            } catch (SQLException e) {
+                // Autres erreurs SQL, on annule et on lève l'exception
+                conn.rollback(); // Annule la transaction
+                throw e;
+            }
+        }
+    
+        if (!transactionSuccess) {
+            // Si toutes les tentatives échouent
+            throw new SQLException("Impossible de créer le produit après " + MAX_RETRIES + " tentatives.");
+        }
+    
         return idProduit;
     }
+    
 
 
 
@@ -343,43 +390,68 @@ public class DBQueries {
     }
 
     //Creer une offre dont la primary key est DateHeureOffre, Email, IdVente
-    public static void creationOffre(Connection conn, float prix, int quantite, int idVente, String email) throws SQLException, IllegalArgumentException {
-
-        //On récupère la vente
-        String checkVenteSql = "SELECT COUNT(*) FROM Vente WHERE IdVente = ?";
-        PreparedStatement checkStmt = conn.prepareStatement(checkVenteSql);
-        checkStmt.setInt(1, idVente);
-        ResultSet rs = checkStmt.executeQuery();
-
-        //On verifie qu'elle existe
-        if (rs.next() && rs.getInt(1) > 0) {
-
-            Timestamp date = Timestamp.from(Instant.now());
-            isDateOffreValide(conn, idVente, date);
-
-            //On creer une Date si elle n'existe pas deja
-            try {
-                String insertDateSql = "INSERT INTO DateOffre (DateHeureOffre) VALUES (?)";
-                PreparedStatement insertDateStmt = conn.prepareStatement(insertDateSql);
-                insertDateStmt.setTimestamp(1, date);
-                insertDateStmt.executeUpdate();
-            } catch (SQLException e) {
-            }
+    public static void creationOffre(Connection conn, float prix, int quantite, int idVente, String email) throws SQLException {
+        boolean transactionSuccess = false;
+        int retryCount = 0;
+        final int MAX_RETRIES = 5;
     
-            //On creer l'offre
-            String insertOffreSql = "INSERT INTO Offre (PrixAchat, QuantiteOffre, IdVente, EmailUtilisateur, DATEHEUREOFFRE) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement insertStmt = conn.prepareStatement(insertOffreSql);
-            insertStmt.setFloat(1, prix);
-            insertStmt.setInt(2, quantite);
-            insertStmt.setInt(3, idVente);
-            insertStmt.setString(4, email);
-            insertStmt.setTimestamp(5, date);
-            insertStmt.executeUpdate();
-
-        } else {
-            throw new SQLException("La vente n'existe plus.");
+        while (!transactionSuccess && retryCount < MAX_RETRIES) {
+            try {
+                // Vérifier si la vente existe
+                String checkVenteSql = "SELECT COUNT(*) FROM Vente WHERE IdVente = ?";
+                PreparedStatement checkStmt = conn.prepareStatement(checkVenteSql);
+                checkStmt.setInt(1, idVente);
+                ResultSet rs = checkStmt.executeQuery();
+    
+                if (rs.next() && rs.getInt(1) > 0) {
+                    Timestamp date = Timestamp.from(Instant.now());
+    
+                    // Vérifier la validité de l’offre
+                    isDateOffreValide(conn, idVente, date);
+                    isPrixQteOffreValide(conn, idVente, prix, quantite);
+    
+                    // Insérer une date si nécessaire
+                    String insertDateSql = "INSERT INTO DateOffre (DateHeureOffre) VALUES (?)";
+                    try {
+                        PreparedStatement insertDateStmt = conn.prepareStatement(insertDateSql);
+                        insertDateStmt.setTimestamp(1, date);
+                        insertDateStmt.executeUpdate();
+                    } catch (SQLException ignored) {
+                        // Ignorer les doublons sur DateOffre
+                    }
+    
+                    // Créer l'offre
+                    String insertOffreSql = "INSERT INTO Offre (PrixAchat, QuantiteOffre, IdVente, EmailUtilisateur, DateHeureOffre) VALUES (?, ?, ?, ?, ?)";
+                    PreparedStatement insertStmt = conn.prepareStatement(insertOffreSql);
+                    insertStmt.setFloat(1, prix);
+                    insertStmt.setInt(2, quantite);
+                    insertStmt.setInt(3, idVente);
+                    insertStmt.setString(4, email);
+                    insertStmt.setTimestamp(5, date);
+                    insertStmt.executeUpdate();
+    
+                    conn.commit();
+                    transactionSuccess = true;
+                } else {
+                    throw new SQLException("La vente n'existe pas.");
+                }
+            } catch (SQLIntegrityConstraintViolationException e) {
+                // Gérer les conflits et réessayer
+                System.err.println("[!] Conflit détecté lors de la création de l'offre, tentative de réessayer...");
+                conn.rollback();
+                retryCount++;
+            } catch (SQLException e) {
+                // Annuler pour toute autre erreur SQL
+                conn.rollback();
+                throw e;
+            }
+        }
+    
+        if (!transactionSuccess) {
+            throw new SQLException("Impossible de créer l'offre après " + MAX_RETRIES + " tentatives.");
         }
     }
+    
 
     //Throw une exception si l'email n'est pas valide
     public static void isEmailValide(Connection conn, String email) throws SQLException {
@@ -452,49 +524,79 @@ public class DBQueries {
 
     //Creer une vente
     public static int creationVente(Connection conn, float prixDepart, String sens, int revocabilite, int nbOffres, int idSalle, int idProduit) throws SQLException {
-
-        String insertVenteSql = "INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-        int idVente = getMaxVenteId(conn) + 1;
-
-        PreparedStatement insertStmt = conn.prepareStatement(insertVenteSql);
-        insertStmt.setInt(1, idVente);
-        insertStmt.setFloat(2, prixDepart);
-        insertStmt.setString(3, sens);
-        insertStmt.setInt(4, revocabilite);
-        insertStmt.setInt(5, nbOffres);
-        insertStmt.setInt(6, idSalle);
-        insertStmt.setInt(7, idProduit);
-
-        insertStmt.executeUpdate();
-
+        int idVente = 0;
+        boolean transactionSuccess = false;
+        int retryCount = 0;
+        final int MAX_RETRIES = 5;
+    
+        while (!transactionSuccess && retryCount < MAX_RETRIES) {
+            try {
+                idVente = getMaxVenteId(conn) + 1;
+    
+                String insertVenteSql = "INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                PreparedStatement insertStmt = conn.prepareStatement(insertVenteSql);
+                insertStmt.setInt(1, idVente);
+                insertStmt.setFloat(2, prixDepart);
+                insertStmt.setString(3, sens);
+                insertStmt.setInt(4, revocabilite);
+                insertStmt.setInt(5, nbOffres);
+                insertStmt.setInt(6, idSalle);
+                insertStmt.setInt(7, idProduit);
+    
+                insertStmt.executeUpdate();
+                conn.commit();
+                transactionSuccess = true;
+            } catch (SQLIntegrityConstraintViolationException e) {
+                // Conflit sur l'ID de la vente, réessayer
+                System.err.println("[!] Conflit sur IdVente, tentative de réessayer...");
+                conn.rollback();
+                retryCount++;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    
+        if (!transactionSuccess) {
+            throw new SQLException("Impossible de créer la vente après " + MAX_RETRIES + " tentatives.");
+        }
+    
         return idVente;
     }
+    
 
     //Creer une vente limitée
     public static void creationVenteLimite(Connection conn, int idVente, Timestamp dateDebut, Timestamp dateFin) throws SQLException {
-
-        String insertVenteLimiteSql = "INSERT INTO VenteLimite (IdVente, DateDebut, DateFin) VALUES (?, ?, ?)";
-
-        PreparedStatement insertStmt = conn.prepareStatement(insertVenteLimiteSql);
-
-        insertStmt.setInt(1, idVente);
-        insertStmt.setTimestamp(2, dateDebut);
-        insertStmt.setTimestamp(3, dateFin);
-
-        insertStmt.executeUpdate();
-        
-    }
+        try {
+            String insertVenteLimiteSql = "INSERT INTO VenteLimite (IdVente, DateDebut, DateFin) VALUES (?, ?, ?)";
+            PreparedStatement insertStmt = conn.prepareStatement(insertVenteLimiteSql);
+            insertStmt.setInt(1, idVente);
+            insertStmt.setTimestamp(2, dateDebut);
+            insertStmt.setTimestamp(3, dateFin);
+    
+            insertStmt.executeUpdate();
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        }
+    }    
 
     //Creer une vente libre
     public static void creationVenteLibre(Connection conn, int idVente) throws SQLException {
-
-        String insertVenteLibreSql = "INSERT INTO VenteLibre (IdVente) VALUES (?)";
-        PreparedStatement insertStmt = conn.prepareStatement(insertVenteLibreSql);
-        insertStmt.setInt(1, idVente);
-        insertStmt.executeUpdate();
-     
+        try {
+            String insertVenteLibreSql = "INSERT INTO VenteLibre (IdVente) VALUES (?)";
+            PreparedStatement insertStmt = conn.prepareStatement(insertVenteLibreSql);
+            insertStmt.setInt(1, idVente);
+    
+            insertStmt.executeUpdate();
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        }
     }
+    
 
     //Renvoi true si une vente est limitée
     public static boolean isVenteLimitee(Connection conn, int idVente) throws SQLException {
