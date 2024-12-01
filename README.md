@@ -195,9 +195,16 @@ attributs dépendent entièrement de cette clé.
 
 ## Interface Homme Machine
 
+
 ### Analyse des fonctionnalités
 
-![Interface Homme Machine](img/ihm.webp)
+![Analyse des fonctionnalités](img/ihm.webp)
+
+
+### Implémentation Java
+
+![Implémentation Java](img/implementationjava.png)
+
 
 ### Mode d'emploi
 
