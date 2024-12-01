@@ -206,259 +206,143 @@ Pour utiliser notre interface homme-machine, il suffit d'exécuter la commande m
 ### Les requêtes SQL2
 
 ```SQL
----------------- SALLE DE VENTE ----------------
+---------------- REQUETES RELATIVES AUX CATEFORIES ----------------
 
--- REGARDER SI UN PRODUIT (<ID_PRODUIT>) A LA MEME CATEGORIE D'UNE SALLE (<ID_SALLE>)
--- Renvoi PRODUIT | SALLE, si le produit à la meme categorie que la salle sinon renvoi VIDE
+-- Liste les noms de toutes les catégories
+SELECT NomCategorie FROM Categorie;
 
-SELECT 
-    p.IdProduit, 
-    p.NomProduit, 
-    s.IdSalle
-FROM Produit p
-JOIN SalleDeVente s ON p.NomCategorie = s.NomCategorie
-WHERE p.IdProduit = <ID_PRODUIT>
-AND s.IdSalle = <ID_SALLE>;
+-- Vérifie si une catégorie donnée existe
+-- Renvoi 1 si la catégorie existe, sinon renvoi VIDE
+SELECT 1 FROM Categorie WHERE NomCategorie = <NOM_CATEGORIE>;
 
+---------------- REQUETES RELATIVES AUX SALLES DE VENTE ----------------
 
--- REGARDER SI UNE NOUVELLE VENTE A LE MEME TYPE DE VENTE QUE LES VENTES D'UNE SALLE
--- UNE VENTE (<SENS_DE_LA_VENTE>, <REVOCABILITE_DE_LA_VENTE>, <NOMBRE_OFFRES_DE_LA_VENTE>, <LIMTE_VENTE>) 
--- <LIMTE_VENTE> doit valoir 'VenteLimitee' ou 'VenteLibre'
--- Renvoi les ventes de salle si la nouvelle vente à le bon type sinon VIDE
+-- Récupère l'ID de la salle de vente avec l'ID le plus élevé
+-- Renvoi l'ID de la dernière salle de vente ajoutée
+SELECT IdSalle FROM SalleDeVente ORDER BY IdSalle DESC FETCH FIRST 1 ROWS ONLY;
 
-SELECT 
-    v.IdVente,
-    v.Sens,
-    v.Revocabilite,
-    v.NbOffres
-FROM Vente v
-WHERE v.IdSalle = <ID_DE_LA_SALLE>
-  AND v.Sens = <SENS_DE_LA_VENTE>
-  AND v.Revocabilite = <REVOCABILITE_DE_LA_VENTE>
-  AND v.NbOffres = <NOMBRE_OFFRES_DE_LA_VENTE>
-  AND (
-      -- Vérifie que toutes les ventes de la salle sont du même type que la nouvelle vente
-      (EXISTS (SELECT 1 FROM VenteLimite vl WHERE vl.IdVente = v.IdVente) 
-       AND <LIMTE_VENTE> = 'VenteLimitee')
-      OR
-      (EXISTS (SELECT 1 FROM VenteLibre vl WHERE vl.IdVente = v.IdVente) 
-       AND <LIMTE_VENTE> = 'VenteLibre')
-  );
+-- Récupère les informations des ventes d'une salle spécifique
+-- Renvoi les détails de la vente (IdVente, Sens, Revocabilite, NbOffres) pour une salle donnée
+SELECT IdVente, Sens, Revocabilite, NbOffres 
+FROM Vente 
+WHERE IdSalle = <ID_SALLE>;
 
----------------- FAIRE UNE OFFRE ----------------
+-- Récupère l'ID et la catégorie d'une salle
+-- Renvoi l'ID et la catégorie (NomCategorie) de toutes les salles de vente
+SELECT IdSalle, NomCategorie FROM SalleDeVente;
 
+-- Vérifie si une salle de vente avec un ID donné existe
+-- Renvoi 1 si la salle de vente existe, sinon renvoi VIDE
+SELECT 1 FROM SalleDeVente WHERE IdSalle = <ID_SALLE>;
 
--- VÉRIFIER QUE LE PRIX DE LA PREMIÈRE OFFRE D'UNE VENTE MONTANTE EST SUPÉRIEUR AU PRIX DE DÉPART
--- Cette requête garantit que la première offre faite dans une vente montante
--- est supérieure au prix de départ défini pour cette vente.
+-- Insère une nouvelle salle de vente avec une catégorie donnée
+-- Ajoute une nouvelle salle de vente avec l'ID et la catégorie spécifiés
+INSERT INTO SalleDeVente (IdSalle, NomCategorie) VALUES (<ID_SALLE>, <NOM_CATEGORIE>);
 
-SELECT COUNT(*) AS OffreValide
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-WHERE Offre.IdVente = :idVente
-AND Offre.EmailUtilisateur = :emailUtilisateur
-AND Offre.PrixAchat > Vente.PrixDepart;
+---------------- REQUETES RELATIVES AUX PRODUITS ----------------
 
+-- Récupère l'ID du produit avec l'ID le plus élevé
+-- Renvoi l'ID du dernier produit ajouté à la base de données
+SELECT IdProduit FROM Produit ORDER BY IdProduit DESC FETCH FIRST 1 ROWS ONLY;
 
--- RÉCUPÉRER LA DERNIÈRE OFFRE D'UNE VENTE (MONTANTE) SPÉCIFIQUE
--- Cette requête sert à vérifier si une nouvelle offre est valide dans une vente montante.
--- Une vente montante impose que chaque nouvelle offre soit supérieure à la dernière offre.
--- Elle extrait la dernière offre enregistrée et son prix d'achat associé pour une vente donnée,
--- afin de les comparer avec les détails de l'offre proposée.
+-- Insère un nouveau produit avec les détails fournis
+-- Ajoute un produit avec l'ID, nom, prix de revient, stock et catégorie fournis
+INSERT INTO Produit (IdProduit, NomProduit, PrixRevient, Stock, NomCategorie) VALUES (<ID_PRODUIT>, <NOM_PRODUIT>, <PRIX_REVIENT>, <STOCK>, <NOM_CATEGORIE>);
 
-SELECT Offre.DateHeureOffre, Offre.PrixAchat
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN DateOffre ON Offre.DateHeureOffre = DateOffre.DateHeureOffre
-WHERE Vente.IdVente = :idVente
-ORDER BY DateOffre.DateHeureOffre DESC
-FETCH FIRST ROW ONLY;
+---------------- REQUETES RELATIVES AUX OFFRES ----------------
 
+-- Récupère le prix de départ et le stock du produit associé à une vente donnée
+-- Renvoi le prix de départ et le stock du produit pour la vente spécifiée
+SELECT PrixDepart, Stock 
+FROM Vente, Produit 
+WHERE Vente.IdProduit = Produit.IdProduit 
+  AND IdVente = <ID_VENTE>;
 
--- VÉRIFIER QUE L'OFFRE A ÉTÉ EFFECTUÉE AVANT LA DATE DE FIN POUR UNE VENTE À DURÉE LIMITÉE
--- Cette requête s'assure que l'offre a été soumise avant la date limite spécifiée pour une vente limitée.
--- Si l'offre est valide (effectuée avant la date de fin), elle est comptabilisée.
+-- Récupère le prix d'achat maximum pour une vente donnée
+-- Renvoi le prix d'achat le plus élevé pour la vente spécifiée
+SELECT MAX(PrixAchat) 
+FROM Offre 
+WHERE IdVente = <ID_VENTE>;
 
-SELECT COUNT(*) AS OffreValide
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
-JOIN DateOffre ON DateOffre.DateHeureOffre = Offre.DateHeureOffre
-WHERE Offre.IdVente = :idVente
-AND DateOffre.DateHeureOffre = :dateOffre
-AND Offre.DateHeureOffre <= VenteLimite.DateFin;
+-- Récupère les informations sur l'utilisateur ayant proposé le prix d'achat maximum pour une vente donnée
+-- Renvoi l'email de l'utilisateur et le prix d'achat maximum pour la vente spécifiée
+SELECT EmailUtilisateur, PrixAchat 
+FROM Offre 
+WHERE IdVente = <ID_VENTE> 
+  AND PrixAchat = (SELECT MAX(PrixAchat) FROM Offre WHERE IdVente = <ID_VENTE>);
 
+-- Récupère la date et l'heure de l'offre avec le prix d'achat maximum pour une vente donnée
+-- Renvoi la date et l'heure de l'offre ayant le prix d'achat maximum pour la vente spécifiée
+SELECT DateHeureOffre 
+FROM Offre 
+WHERE IdVente = <ID_VENTE> 
+  AND PrixAchat = (SELECT MAX(PrixAchat) FROM Offre WHERE IdVente = <ID_VENTE>);
 
--- COMPTER LE NOMBRE D'OFFRES D'UN UTILISATEUR POUR UNE VENTE À OFFRES LIMITÉES
--- Cette requête permet de vérifier si un utilisateur a déjà atteint la limite d'offres autorisées
--- pour une vente où le nombre d'offres par utilisateur est restreint.
--- Si l'utilisateur a déjà soumis une offre pour cette vente, une nouvelle offre ne sera pas acceptée.
+-- Récupère le nombre d'offres pour une vente donnée
+-- Renvoi le nombre total d'offres pour la vente spécifiée
+SELECT COUNT(*) FROM Vente WHERE IdVente = <ID_VENTE>;
 
-SELECT COUNT(*) AS NombreOffres
-FROM Offre
-WHERE Offre.EmailUtilisateur = :emailUtilisateur
-AND Offre.IdVente = :idVente;
+-- Insère une nouvelle date pour une offre
+-- Ajoute une nouvelle date d'offre avec la date et l'heure spécifiées
+INSERT INTO DateOffre (DateHeureOffre) VALUES (<DATE_HEURE_OFFER>);
 
+-- Insère une nouvelle offre avec les détails fournis
+-- Ajoute une nouvelle offre avec le prix d'achat, la quantité, l'ID de la vente, l'email de l'utilisateur et la date et l'heure de l'offre
+INSERT INTO Offre (PrixAchat, QuantiteOffre, IdVente, EmailUtilisateur, DATEHEUREOFFRE) VALUES (<PRIX_ACHAT>, <QUANTITE_OFFER>, <ID_VENTE>, <EMAIL_UTILISATEUR>, <DATE_HEURE_OFFER>);
 
--- VÉRIFIER SI UNE VENTE DESCENDANTE DOIT ÊTRE FERMÉE AVEC UNE SEULE OFFRE
--- Dans une vente descendante, si une seule offre est effectuée, la vente est automatiquement fermée.
--- Cette requête permet de compter le nombre d'offres effectuées pour une vente descendante spécifique.
+-- Vérifie si un utilisateur existe
+-- Renvoi 1 si l'utilisateur avec l'email donné existe, sinon renvoi VIDE
+SELECT 1 FROM Utilisateur WHERE EmailUtilisateur = <EMAIL_UTILISATEUR>;
 
-SELECT COUNT(*) AS VenteFermee
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-WHERE Offre.IdVente = :idVente
-AND Vente.Sens = 'decroissant';
+---------------- REQUETES RELATIVES AUX VENTES ----------------
 
+-- Vérifie si une vente avec un ID donné existe
+-- Renvoi 1 si la vente existe, sinon renvoi VIDE
+SELECT 1 FROM Vente WHERE IdVente = <ID_VENTE>;
 
+-- Récupère les informations des ventes pour une salle donnée
+-- Renvoi les détails des ventes (IdVente, NomProduit, Stock, PrixDepart) pour la salle spécifiée
+SELECT IdVente, NomProduit, Stock, PrixDepart 
+FROM Vente, Produit 
+WHERE Vente.IdProduit = Produit.IdProduit 
+  AND IdSalle = <ID_SALLE>;
 
----------------- RÉCUPÉRER Le GAGNANT D'UNE VENTE MONTANTE ----------------
+-- Récupère l'ID de la vente avec l'ID le plus élevé
+-- Renvoi l'ID de la dernière vente ajoutée à la base de données
+SELECT IdVente FROM Vente ORDER BY IdVente DESC FETCH FIRST 1 ROWS ONLY;
 
--- RÉCUPÉRER LE GAGNANT UNE VENTE MONTANTE À DURÉE LIBRE ET NON RÉVOCABLE
--- Cette requête extrait la dernière offre effectuée dans une vente à durée
--- libre et non révocable.
+-- Insère une nouvelle vente avec les détails fournis
+-- Ajoute une nouvelle vente avec les détails spécifiés (prix de départ, sens, revocabilité, etc.)
+INSERT INTO Vente (IdVente, PrixDepart, Sens, Revocabilite, NbOffres, IdSalle, IdProduit) VALUES (<ID_VENTE>, <PRIX_DEPART>, <SENS>, <REVOCABILITE>, <NB_OFFRES>, <ID_SALLE>, <ID_PRODUIT>);
 
-SELECT Offre.*
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
-WHERE Vente.Sens = 'croissant'
-AND Vente.Revocabilite = 0
-AND Vente.IdVente = :idVente
-ORDER BY Offre.DateHeureOffre DESC
-FETCH FIRST ROW ONLY;
+-- Insère une vente limitée avec ses dates de début et de fin
+-- Ajoute une nouvelle vente limitée avec la date de début et de fin spécifiées
+INSERT INTO VenteLimite (IdVente, DateDebut, DateFin) VALUES (<ID_VENTE>, <DATE_DEBUT>, <DATE_FIN>);
 
+-- Insère une vente libre
+-- Ajoute une vente libre pour l'ID de vente spécifié
+INSERT INTO VenteLibre (IdVente) VALUES (<ID_VENTE>);
 
--- RÉCUPÉRER LE GAGNANT D'UNE VENTE MONTANTE À DURÉE FIXE ET NON RÉVOCABLE
--- Cette requête extrait la dernière offre effectuée avant la date de fin 
--- dans une vente montante non révocable
+-- Vérifie si une vente est limitée ou libre
+-- Renvoi 1 si la vente est limitée, sinon 0
+SELECT CASE 
+       WHEN vlim.IdVente IS NOT NULL THEN 1 
+       ELSE 0 
+       END AS isLimitee 
+FROM Vente v 
+LEFT JOIN VenteLimite vlim ON v.IdVente = vlim.IdVente 
+WHERE v.IdVente = <ID_VENTE>;
 
-SELECT Offre.*
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
-WHERE Vente.Sens = 'croissant'
-AND Vente.Revocabilite = 0
-AND Vente.IdVente = :idVente
-AND VenteLimite.DateFin > Offre.DateHeureOffre
-ORDER BY Offre.DateHeureOffre DESC
-FETCH FIRST ROW ONLY;
+-- Récupère la date de début d'une vente limitée
+-- Renvoi la date de début de la vente limitée spécifiée
+SELECT DateDebut FROM VenteLimite WHERE IdVente = <ID_VENTE>;
 
+-- Récupère la date de fin d'une vente limitée
+-- Renvoi la date de fin de la vente limitée spécifiée
+SELECT DateFin FROM VenteLimite WHERE IdVente = <ID_VENTE>;
 
--- RÉCUPÉRER LE GAGANT D'UNE VENTE MONTANTE À DURÉE LIBRE ET RÉVOCABLE
--- Cette requête extrait la dernière offre effectuée et évalue si elle doit être révoquée
--- en comparant son prix d'achat au prix de revient du produit associé.
-
-SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
-  CASE 
-    WHEN o.PrixAchat < p.PrixRevient THEN 'Révoquer'
-    ELSE 'Conserver'
-  END AS StatutVente
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN Produit ON Vente.IdProduit = Produit.IdProduit
-JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
-WHERE Vente.Sens = 'croissant'
-AND Vente.Revocabilite = 1
-AND Vente.IdVente = :idVente
-ORDER BY Offre.DateHeureOffre DESC, Offre.PrixAchat DESC
-FETCH FIRST ROW ONLY;
-
-
--- RÉCUPÉRER LE GAGNANT D'UNE VENTE MONTANTE À DURÉE FIXE ET RÉVOCABLE
--- Cette requête identifie la meilleure offre soumise avant la date de fin
--- dans une vente descendante révocable, et détermine si elle doit être révoquée.
-
-SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
-  CASE 
-    WHEN Offre.PrixAchat < Produit.PrixRevient THEN 'Révoquer'
-    ELSE 'Conserver'
-  END AS StatutVente
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN Produit ON Vente.IdProduit = Produit.IdProduit
-JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
-WHERE Vente.Sens = 'croissant'
-AND Vente.Revocabilite = 1
-AND Vente.IdVente = :idVente
-AND VenteLimite.DateFin > Offre.DateHeureOffre
-ORDER BY Offre.DateHeureOffre DESC
-FETCH FIRST ROW ONLY;
-
-
----------------- RÉCUPÉRER Le GAGNANT D'UNE VENTE DESCENDANTE ----------------
-
--- RÉCUPÉRER Le GAGNANT D'UNE VENTE DESCENDANTE À DURÉE LIBRE ET NON RÉVOCABLE
--- Cette requête identifie la première offre soumise dans une vente descendante
--- où la durée est illimitée et les offres ne peuvent pas être révoquées.
-
-SELECT Offre.*
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
-WHERE Vente.Sens = 'decroissant'
-AND Vente.Revocabilite = 0
-AND Vente.IdVente = :idVente
-ORDER BY Offre.DateHeureOffre ASC
-FETCH FIRST ROW ONLY;
-
-
--- RÉCUPÉRER LE GAGNANT D'UNE VENTE DESCENDANTE À DURÉE FIXE ET NON RÉVOCABLE
--- Cette requête identifie la première offre soumise avant la date de fin 
--- dans une vente descendante où les offres ne peuvent pas être révoquées.
-
-SELECT Offre.*
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
-WHERE Vente.Sens = 'decroissant'
-AND Vente.Revocabilite = 0
-AND Vente.IdVente = :idVente
-AND VenteLimite.DateFin > Offre.DateHeureOffre
-ORDER BY Offre.DateHeureOffre ASC
-FETCH FIRST ROW ONLY;
-
-
--- RÉCUPÉRER LE GAGNANT POUR UNE VENTE DESCENDANTE À DURÉE LIBRE ET RÉVOCABLE
--- Cette requête extrait la première offre soumise dans une vente descendante révocable
--- et détermine si elle doit être conservée ou révoquée en fonction de son prix.
-
-SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
-  CASE 
-    WHEN Offre.PrixAchat < Produit.PrixRevient THEN 'Révoquer'
-    ELSE 'Conserver'
-  END AS StatutVente
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN Produit ON Vente.IdProduit = Produit.IdProduit
-JOIN VenteLibre ON Vente.IdVente = VenteLibre.IdVente
-WHERE Vente.Sens = 'decroissant'
-AND Vente.Revocabilite = 1
-AND Vente.IdVente = :idVente
-ORDER BY Offre.DateHeureOffre ASC, Offre.PrixAchat ASC
-FETCH FIRST ROW ONLY;
-
-
--- RÉCUPÉRER LE GAGNANT D'UNE VENTE DESCENDANTE À DURÉE FIXE ET RÉVOCABLE
--- Cette requête identifie la première offre soumise avant la date de fin
--- dans une vente descendante révocable et détermine si elle doit être conservée ou révoquée.
-
-SELECT Offre.EmailUtilisateur, Offre.PrixAchat, Produit.PrixRevient,
-  CASE 
-    WHEN Offre.PrixAchat < Produit.PrixRevient THEN 'Révoquer'
-    ELSE 'Conserver'
-  END AS StatutVente
-FROM Offre
-JOIN Vente ON Offre.IdVente = Vente.IdVente
-JOIN Produit ON Vente.IdProduit = Produit.IdProduit
-JOIN VenteLimite ON Vente.IdVente = VenteLimite.IdVente
-WHERE Vente.Sens = 'decroissant'
-AND Vente.Revocabilite = 1
-AND Vente.IdVente = :idVente
-AND VenteLimite.DateFin > Offre.DateHeureOffre
-ORDER BY Offre.DateHeureOffre ASC
-FETCH FIRST ROW ONLY;
 ```
+
 ## Bilan 
 
 ### Points Difficiles Rencontrés
