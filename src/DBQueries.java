@@ -464,6 +464,8 @@ public class DBQueries {
         }
     }
     
+    
+    
 
 
     //                                  ========== VENTE ==========
@@ -682,5 +684,38 @@ public class DBQueries {
             return (date.getTime() - date_derniere_offre.getTime() > 10*60*1000);
         }
     }
+
+    public static boolean isVenteRevocable(Connection conn, int idVente) throws SQLException {
+
+        String checkRevocableSql = "SELECT Revocabilite FROM Vente WHERE IdVente = ?";
+        
+        PreparedStatement stmt = conn.prepareStatement(checkRevocableSql);
+        stmt.setInt(1, idVente); 
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getInt("Revocabilite") == 1; // Retourne true si la vente est révocable
+        } else {
+            throw new IllegalArgumentException("IdVente non trouvé.");
+        }
+    }
+    
+    public static float getPrixRevientProduit(Connection conn, int idVente) throws SQLException {
+        // Requête SQL pour récupérer le prix de revient du produit associé à une vente
+        String getPrixRevientSql = "SELECT p.PrixRevient FROM Produit p JOIN Vente v ON p.IdProduit = v.IdProduit WHERE v.IdVente = ?";
+        
+        PreparedStatement stmt = conn.prepareStatement(getPrixRevientSql);
+        stmt.setInt(1, idVente);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getFloat("PrixRevient"); 
+        } else {
+            throw new IllegalArgumentException("IdVente ou produit associé non trouvé.");
+        }
+    }
+        
+    
+    
 
 }

@@ -77,6 +77,28 @@ public class MenuResult {
             System.err.println("[!] L'enchère sur cette vente n'est pas finie");
             return;
         }
+
+        try {
+            float valeurMeilleureoffre = DBQueries.getValeurMeilleureOffre(conn, id_vente);
+
+            //On verifie qu'au moin une offre existe
+            if (valeurMeilleureoffre == 0) { 
+                System.out.println("\n[☺] Aucune offre pour cette enchère");
+                return;
+            } 
+
+            
+            if (DBQueries.isVenteRevocable(conn, id_vente)) { //Si la vente est revocable
+                if (valeurMeilleureoffre < DBQueries.getPrixRevientProduit(conn, id_vente)) { //Si le prix de l'offre est trop bas
+                    System.out.println("\n[☺] Aucun gagnant pour cette enchère, les offres proposées sont trop basses. (revocabilité)");
+                    return;
+                }
+            }
+
+        }catch (Exception e) {
+            System.err.println("[!] Erreur dans les requètes de revocabilitées");
+            return;
+        }
         
         //Afficher le gagnant
         try {
