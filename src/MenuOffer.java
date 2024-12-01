@@ -112,7 +112,6 @@ public class MenuOffer {
                 } else {
                     try {
                         // Validation de la quantité
-                        System.out.println("Quantité de l'offre : " + quantite);
                         DBQueries.isQuantiteValide(conn, id_vente, quantite); // Valider la quantité avec la nouvelle fonction
                     } catch (IllegalArgumentException e) {
                         System.err.println("[!] L'offre n'est pas valide : " + e.getMessage());

@@ -746,7 +746,6 @@ public class DBQueries {
         rs.next();
         String sens = rs.getString("Sens");
         rs.close();
-        System.out.println(sens);
         return sens.equals("croissant");
     }
 
